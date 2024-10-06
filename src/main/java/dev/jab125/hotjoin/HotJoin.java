@@ -119,7 +119,6 @@ public class HotJoin {
 
 		boolean hotjoinClient = System.getProperty("hotjoin.client", "false").equals("true");
 		String hotjoinServer = System.getProperty("hotjoin.server", "");
-		long hotjoinWindow = Long.parseLong(System.getProperty("hotjoin.window", "0"));
 		String t = System.getProperty("hotjoin.uuid", "");
 		UUID hotjoinUUID = t.isEmpty() ? null : UUID.fromString(t);
 		boolean[] firstTime = new boolean[]{true, true};
@@ -373,7 +372,6 @@ public class HotJoin {
 		if (!System.getProperty("fabric.remapClasspathFile", "").isEmpty()) l = ArrayUtils.addAll(l, "-Dfabric.remapClasspathFile=" + System.getProperty("fabric.remapClasspathFile"));
 		l = ArrayUtils.addAll(l, "-Dhotjoin.client=true", "-Dhotjoin.server=localhost:" + singleplayerServer.getPort(), addMods);
 		l = ArrayUtils.addAll(l,
-				"-Dhotjoin.window=" + Minecraft.getInstance().getWindow().getWindow(),
 				"-Dhotjoin.uuid=" + uuid
 		);
 		if (FabricLoader.getInstance().isDevelopmentEnvironment()) l = ArrayUtils.addAll(l, "-Dfabric.development=true");
