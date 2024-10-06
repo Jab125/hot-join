@@ -1,5 +1,6 @@
 package dev.jab125.hotjoin;
 
+import com.google.common.io.ByteStreams;
 import com.mojang.blaze3d.platform.Monitor;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.platform.Window;
@@ -8,6 +9,10 @@ import com.mojang.brigadier.context.CommandContext;
 import dev.jab125.hotjoin.packet.AlohaPayload;
 import dev.jab125.hotjoin.packet.SteamPayload;
 import dev.jab125.hotjoin.packet.KidneyPayload;
+import dev.jab125.hotjoin.util.AuthCallback;
+import dev.jab125.hotjoin.util.HotJoinCodecs;
+import me.axieum.mcmod.authme.api.util.SessionUtils;
+import me.axieum.mcmod.authme.impl.gui.MicrosoftAuthScreen;
 import net.deechael.concentration.Concentration;
 import net.deechael.concentration.FullscreenMode;
 import net.deechael.concentration.fabric.config.ConcentrationConfigFabric;
@@ -36,6 +41,8 @@ import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.multiplayer.resolver.ServerAddress;
 import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.client.server.IntegratedServer;
+import net.minecraft.nbt.NbtIo;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import org.apache.commons.lang3.ArrayUtils;
@@ -73,7 +80,10 @@ public class HotJoin {
 		LOGGER.info("Hello Fabric world!");
 		ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
 			var command = ClientCommandManager.literal("hotjoin");
-			command.executes(this::hotJoin);
+			command.then(ClientCommandManager.literal("microsoft").executes(v -> hotJoin(true, v)));
+			if (FabricLoader.getInstance().isDevelopmentEnvironment()) {
+				command.executes(v -> hotJoin(false, v));
+			}
 			var c = ClientCommandManager.literal("screenshot").executes(a -> {
 				try {
 					getMCWindowContents();
@@ -138,12 +148,17 @@ public class HotJoin {
 		long hotjoinWindow = Long.parseLong(System.getProperty("hotjoin.window", "0"));
 		String t = System.getProperty("hotjoin.uuid", "");
 		UUID hotjoinUUID = t.isEmpty() ? null : UUID.fromString(t);
-		boolean[] firstTime = new boolean[]{true};
+		boolean[] firstTime = new boolean[]{true, true};
+		String magic = System.getProperty("hotjoin.magic", "");
 		if (hotjoinClient) {
 			ScreenEvents.AFTER_INIT.register((client, screen, scaledWidth, scaledHeight) -> {
 				if (screen instanceof TitleScreen || screen instanceof AccessibilityOnboardingScreen) {
 					if (firstTime[0]) firstTime[0] = false;
 					else {
+						if (firstTime[1]) {
+							firstTime[1] = false;
+							SessionUtils.setSession(HotJoinCodecs.USER_CODEC.decode(NbtOps.INSTANCE, crashgoByeBye(() ->NbtIo.read(ByteStreams.newDataInput(Base64.getDecoder().decode(magic.replace("$", "=")))))).resultOrPartial(LOGGER::error).orElseThrow().getFirst());
+						}
 						this.join(new ServerData("A Minecraftc nk∆∆i¶•†¥", hotjoinServer, ServerData.Type.LAN));
 					}
 				}
@@ -333,9 +348,24 @@ public class HotJoin {
 		ConnectScreen.startConnecting(new TitleScreen(), Minecraft.getInstance(), ServerAddress.parseString(serverData.ip), serverData, false, null);
 	}
 
-	private int hotJoin(CommandContext<FabricClientCommandSource> a) {
+	private int hotJoin(boolean michaelsoft, CommandContext<FabricClientCommandSource> a) {
 		try {
-			launchMinecraftClient();
+			if (michaelsoft) {
+				a.getSource().getClient().tell(() -> {
+					MicrosoftAuthScreen microsoftAuthScreen = new MicrosoftAuthScreen(Minecraft.getInstance().screen, null, true);
+					((AuthCallback) microsoftAuthScreen).hotjoin$authResponse(s -> {
+						try {
+							System.out.println("Got a response!: " + s);
+							launchMinecraftClient(s);
+						} catch (IOException e) {
+							throw new RuntimeException(e);
+						}
+					});
+					Minecraft.getInstance().setScreen(microsoftAuthScreen);
+				});
+			} else {
+				launchMinecraftClient(null);
+			}
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
@@ -352,7 +382,8 @@ public class HotJoin {
 	}
 
 	// The goal is to launch Minecraft a second time, under a different directory.
-	private void launchMinecraftClient() throws IOException {
+	private void launchMinecraftClient(String magic) throws IOException {
+		magic = magic.replace("=", "$");
 		UUID uuid = UUID.randomUUID();
 		INSTANCES.add(uuid);
 		IntegratedServer singleplayerServer = Minecraft.getInstance().getSingleplayerServer();
@@ -400,6 +431,7 @@ public class HotJoin {
 				"-Dhotjoin.window=" + Minecraft.getInstance().getWindow().getWindow(),
 				"-Dhotjoin.uuid=" + uuid
 		);
+		if (magic != null) l = ArrayUtils.addAll(l, "-Dhotjoin.magic=" + magic);
 		l = ArrayUtils.addAll(l, "-cp", cp, "net.fabricmc.loader.impl.launch.knot.KnotClient");
 		l = ArrayUtils.addAll(l, launchArguments);
 		//l = ArrayUtils.addAll(l, "--quickPlayMultiplayer", "hotjoin-lanlocalhost:" + singleplayerServer.getPort() /*"localhost:%s".formatted(singleplayerServer.getPort())*/);
