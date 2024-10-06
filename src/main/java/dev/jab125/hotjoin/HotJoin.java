@@ -6,7 +6,6 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.brigadier.context.CommandContext;
 import dev.jab125.hotjoin.packet.AlohaPayload;
 import dev.jab125.hotjoin.packet.SteamPayload;
-import dev.jab125.hotjoin.packet.KidneyPayload;
 import dev.jab125.hotjoin.util.AuthCallback;
 import dev.jab125.hotjoin.util.HotJoinCodecs;
 import me.axieum.mcmod.authme.api.util.SessionUtils;
@@ -82,7 +81,7 @@ public class HotJoin {
 			dispatcher.register(command);
 		});
 		//noinspection removal
-		PayloadTypeRegistry.playC2S().register(KidneyPayload.TYPE, KidneyPayload.STREAM_CODEC);
+		PayloadTypeRegistry.playC2S().register(dev.jab125.hotjoin.packet.KidneyPayload.TYPE, dev.jab125.hotjoin.packet.KidneyPayload.STREAM_CODEC);
 		PayloadTypeRegistry.playC2S().register(AlohaPayload.TYPE, AlohaPayload.STREAM_CODEC);
 		PayloadTypeRegistry.playS2C().register(SteamPayload.TYPE, SteamPayload.STREAM_CODEC);
 
