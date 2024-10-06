@@ -58,7 +58,7 @@ import java.util.function.Supplier;
 import static java.util.function.Predicate.not;
 
 public class HotJoin {
-	public static final String MOD_ID = "hot-join";
+	public static final String MOD_ID = "hotjoin";
 
 	// This logger is used to write text to the console and the log file.
 	// It is considered best practice to use your mod id as the logger's name.

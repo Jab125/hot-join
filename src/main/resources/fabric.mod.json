@@ -1,8 +1,8 @@
 {
 	"schemaVersion": 1,
-	"id": "hot-join",
+	"id": "hotjoin",
 	"version": "${version}",
-	"name": "Hot-Join",
+	"name": "HotJoin",
 	"description": "Splitscreen mod for Minecraft",
 	"authors": [
 		"Jab125"
