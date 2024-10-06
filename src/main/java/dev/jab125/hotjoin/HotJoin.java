@@ -5,13 +5,18 @@ import com.mojang.blaze3d.pipeline.TextureTarget;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.brigadier.context.CommandContext;
+import dev.jab125.hotjoin.packet.KidneyPayload;
 import net.fabricmc.api.ModInitializer;
 
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
 import net.fabricmc.loader.api.metadata.ModOrigin;
@@ -29,8 +34,10 @@ import net.minecraft.client.gui.screens.multiplayer.ServerSelectionList;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.multiplayer.resolver.ServerAddress;
 import net.minecraft.client.quickplay.QuickPlay;
+import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.client.server.LanServer;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.commands.PublishCommand;
 import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
@@ -53,8 +60,10 @@ public class HotJoin {
 	// It is considered best practice to use your mod id as the logger's name.
 	// That way, it's clear which mod wrote info, warnings, and errors.
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
+	public static final ResourceLocation AVABVB = ResourceLocation.parse("ava:bvb");
 
 
+	byte[] bytes;
 	public void onInitialize() throws IOException {
 		System.out.println(System.getProperties());
 		// This code runs as soon as Minecraft is in a mod-load-ready state.
@@ -69,7 +78,8 @@ public class HotJoin {
 			command.executes(this::hotJoin);
 			var c = ClientCommandManager.literal("screenshot").executes(a -> {
 				try {
-					return getMCWindowContents();
+					getMCWindowContents();
+					return 0;
 				} catch (IOException e) {
 					throw new RuntimeException(e);
 				}
@@ -80,6 +90,25 @@ public class HotJoin {
 //		ClientTickEvents.START_CLIENT_TICK.register(client -> {
 //			hotJoin(null);
 //		});
+		PayloadTypeRegistry.playC2S().register(KidneyPayload.TYPE, KidneyPayload.STREAM_CODEC);
+
+		ServerPlayNetworking.registerGlobalReceiver(KidneyPayload.TYPE, (payload, context) -> {
+			//System.out.println("Received kidney, size " + payload.b().length);
+//			if (bytes == null)
+//			bytes = payload.b();
+//			NativeImage nativeImage = crashgoByeBye(() -> NativeImage.read(payload.b()));
+//			if (currentNativeImage[0] != null) currentNativeImage[0].close(); // don't want to leak 60 images a second
+//			currentNativeImage[0] = nativeImage;
+		});
+
+//		HudRenderCallback.EVENT.register((drawContext, tickCounter) -> {
+//			if (bytes != null) {
+//				DynamicTexture dynamicTexture = new DynamicTexture(crashgoByeBye(() -> NativeImage.read(bytes)));
+//				Minecraft.getInstance().getTextureManager().register(AVABVB, dynamicTexture);
+//				drawContext.blit(AVABVB, 0, 0, 100, 100, 0, 0);
+//				dynamicTexture.close();
+//			}
+//		});
 
 		boolean hotjoinClient = System.getProperty("hotjoin.client", "false").equals("true");
 		String hotjoinServer = System.getProperty("hotjoin.server", "");
@@ -89,11 +118,28 @@ public class HotJoin {
 				if (screen instanceof TitleScreen || screen instanceof AccessibilityOnboardingScreen) {
 					if (firstTime[0]) firstTime[0] = false;
 					else {
-						this.join( new ServerData("A Minecraftc nk∆∆i¶•†¥", hotjoinServer, ServerData.Type.LAN));
+						this.join(new ServerData("A Minecraftc nk∆∆i¶•†¥", hotjoinServer, ServerData.Type.LAN));
 					}
 				}
 			});
+			ClientTickEvents.END_CLIENT_TICK.register(client -> {
+				if (client.level != null) {
+					// if this leaks, well...
+					byte[] mcWindowContents = crashgoByeBye(this::getMCWindowContents);
+					ClientPlayNetworking.send(new KidneyPayload(mcWindowContents));
+				}
+			});
 		}
+	}
+
+	@FunctionalInterface
+	interface SupplierButBetter<T, R extends Throwable> {
+		T get() throws R;
+	}
+
+	@SuppressWarnings({"RedundantCast", "unchecked"})
+	private <T, R extends Throwable> T crashgoByeBye(SupplierButBetter<T, R> t) {
+		return ((SupplierButBetter<T, RuntimeException>) t).get();
 	}
 
 
@@ -110,13 +156,13 @@ public class HotJoin {
 		return 0;
 	}
 
-	private int getMCWindowContents() throws IOException {
+	private byte[] getMCWindowContents() throws IOException {
 		Window window = Minecraft.getInstance().getWindow();
 		int height = window.getHeight();
 		int width = window.getWidth();
 		NativeImage nativeImage = Screenshot.takeScreenshot(Minecraft.getInstance().getMainRenderTarget());
-		nativeImage.writeToFile(Path.of("test.png"));
-		return 0;
+		//nativeImage.writeToFile(Path.of("test.png"));
+		return nativeImage.asByteArray();
 	}
 
 	// The goal is to launch Minecraft a second time, under a different directory.
