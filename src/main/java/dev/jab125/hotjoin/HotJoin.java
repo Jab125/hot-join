@@ -431,7 +431,8 @@ public class HotJoin {
 		System.out.println(addMods);
 		var l = new String[0]; //new String[]{"java", "-XstartOnFirstThread", "-cp", cp, "net.fabricmc.loader.impl.launch.knot.KnotClient"};
 		//LoaderUtil
-		l = ArrayUtils.addAll(l, "java", "-XstartOnFirstThread");
+		l = ArrayUtils.addAll(l, "java");
+		if (Minecraft.ON_OSX) l = ArrayUtils.addAll(l, "-XstartOnFirstThread");
 		if (!System.getProperty("fabric.remapClasspathFile", "").isEmpty()) l = ArrayUtils.addAll(l, "-Dfabric.remapClasspathFile=" + System.getProperty("fabric.remapClasspathFile"));
 		l = ArrayUtils.addAll(l, "-Dhotjoin.client=true", "-Dhotjoin.server=localhost:" + singleplayerServer.getPort(), addMods);
 		l = ArrayUtils.addAll(l,
