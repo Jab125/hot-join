@@ -131,7 +131,7 @@ public class HotJoin {
 					else {
 						if (firstTime[1]) {
 							firstTime[1] = false;
-							SessionUtils.setSession(HotJoinCodecs.USER_CODEC.decode(NbtOps.INSTANCE, crashgoByeBye(() ->NbtIo.read(ByteStreams.newDataInput(Base64.getDecoder().decode(magic.replace("$", "=")))))).resultOrPartial(LOGGER::error).orElseThrow().getFirst());
+							if (!magic.isEmpty()) SessionUtils.setSession(HotJoinCodecs.USER_CODEC.decode(NbtOps.INSTANCE, crashgoByeBye(() ->NbtIo.read(ByteStreams.newDataInput(Base64.getDecoder().decode(magic.replace("$", "=")))))).resultOrPartial(LOGGER::error).orElseThrow().getFirst());
 						}
 						this.join(new ServerData("A Minecraftc nk∆∆i¶•†¥", hotjoinServer, ServerData.Type.LAN));
 					}
