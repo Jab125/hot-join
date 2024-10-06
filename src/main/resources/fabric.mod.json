@@ -3,15 +3,15 @@
 	"id": "hot-join",
 	"version": "${version}",
 	"name": "Hot-Join",
-	"description": "This is an example description! Tell everyone what your mod is about!",
+	"description": "Splitscreen mod for Minecraft",
 	"authors": [
-		"Me!"
+		"Jab125"
 	],
 	"contact": {
-		"homepage": "https://fabricmc.net/",
-		"sources": "https://github.com/FabricMC/fabric-example-mod"
+		"homepage": "https://modrinth.com/mod/hotjoin",
+		"sources": "https://github.com/Jab125/hotjoin"
 	},
-	"license": "CC0-1.0",
+	"license": "LGPL-2.1-only",
 	"icon": "assets/hot-join/icon.png",
 	"environment": "*",
 	"entrypoints": {
@@ -29,9 +29,8 @@
 		"fabricloader": ">=0.16.5",
 		"minecraft": "~1.21.1",
 		"java": ">=21",
-		"fabric-api": "*"
-	},
-	"suggests": {
-		"another-mod": "*"
+		"fabric-api": "*",
+		"concentration": "*",
+		"authme": "*"
 	}
 }
