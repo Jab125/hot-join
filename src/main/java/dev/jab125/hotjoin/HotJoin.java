@@ -53,6 +53,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.function.Supplier;
 
 import static java.util.function.Predicate.not;
 
@@ -80,7 +81,13 @@ public class HotJoin {
 		LOGGER.info("Hello Fabric world!");
 		ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
 			var command = ClientCommandManager.literal("hotjoin");
-			command.then(ClientCommandManager.literal("microsoft").executes(v -> hotJoin(true, v)));
+			if (FabricLoader.getInstance().isModLoaded("authme")) {
+				Supplier<Supplier<Runnable>> f = () -> () -> () -> {
+					command.then(ClientCommandManager.literal("authme").then(ClientCommandManager.literal("microsoft").executes(v -> hotJoin(true, v))));
+				};
+				f.get().get().run();
+			}
+
 			if (FabricLoader.getInstance().isDevelopmentEnvironment()) {
 				command.executes(v -> hotJoin(false, v));
 			}
@@ -383,7 +390,7 @@ public class HotJoin {
 
 	// The goal is to launch Minecraft a second time, under a different directory.
 	private void launchMinecraftClient(String magic) throws IOException {
-		magic = magic.replace("=", "$");
+		if (magic != null) magic = magic.replace("=", "$");
 		UUID uuid = UUID.randomUUID();
 		INSTANCES.add(uuid);
 		IntegratedServer singleplayerServer = Minecraft.getInstance().getSingleplayerServer();
@@ -426,11 +433,12 @@ public class HotJoin {
 		//LoaderUtil
 		l = ArrayUtils.addAll(l, "java", "-XstartOnFirstThread");
 		if (!System.getProperty("fabric.remapClasspathFile", "").isEmpty()) l = ArrayUtils.addAll(l, "-Dfabric.remapClasspathFile=" + System.getProperty("fabric.remapClasspathFile"));
-		l = ArrayUtils.addAll(l, "-Dhotjoin.client=true", "-Dhotjoin.server=localhost:" + singleplayerServer.getPort(), "-Dfabric.development=true", addMods);
+		l = ArrayUtils.addAll(l, "-Dhotjoin.client=true", "-Dhotjoin.server=localhost:" + singleplayerServer.getPort(), addMods);
 		l = ArrayUtils.addAll(l,
 				"-Dhotjoin.window=" + Minecraft.getInstance().getWindow().getWindow(),
 				"-Dhotjoin.uuid=" + uuid
 		);
+		if (FabricLoader.getInstance().isDevelopmentEnvironment()) ArrayUtils.addAll(l, "-Dfabric.development=true");
 		if (magic != null) l = ArrayUtils.addAll(l, "-Dhotjoin.magic=" + magic);
 		l = ArrayUtils.addAll(l, "-cp", cp, "net.fabricmc.loader.impl.launch.knot.KnotClient");
 		l = ArrayUtils.addAll(l, launchArguments);
