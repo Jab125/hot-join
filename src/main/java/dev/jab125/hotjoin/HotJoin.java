@@ -1,44 +1,41 @@
 package dev.jab125.hotjoin;
 
-import com.mojang.blaze3d.pipeline.RenderTarget;
-import com.mojang.blaze3d.pipeline.TextureTarget;
+import com.mojang.blaze3d.platform.Monitor;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.platform.Window;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.brigadier.context.CommandContext;
+import dev.jab125.hotjoin.packet.AlohaPayload;
+import dev.jab125.hotjoin.packet.SteamPayload;
 import dev.jab125.hotjoin.packet.KidneyPayload;
-import net.fabricmc.api.ModInitializer;
+import net.deechael.concentration.Concentration;
+import net.deechael.concentration.FullscreenMode;
+import net.deechael.concentration.fabric.config.ConcentrationConfigFabric;
+import net.deechael.concentration.mixin.accessor.WindowAccessor;
 
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
 import net.fabricmc.loader.api.metadata.ModOrigin;
-import net.fabricmc.loader.impl.FabricLoaderImpl;
-import net.fabricmc.loader.impl.launch.knot.Knot;
-import net.fabricmc.loader.impl.launch.knot.KnotClient;
-import net.fabricmc.loader.impl.util.LoaderUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Screenshot;
 import net.minecraft.client.gui.screens.AccessibilityOnboardingScreen;
 import net.minecraft.client.gui.screens.ConnectScreen;
 import net.minecraft.client.gui.screens.TitleScreen;
-import net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen;
-import net.minecraft.client.gui.screens.multiplayer.ServerSelectionList;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.multiplayer.resolver.ServerAddress;
-import net.minecraft.client.quickplay.QuickPlay;
-import net.minecraft.client.renderer.texture.DynamicTexture;
+import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.client.server.IntegratedServer;
-import net.minecraft.client.server.LanServer;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.commands.PublishCommand;
+import net.minecraft.server.level.ServerPlayer;
 import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,10 +43,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.*;
 
 import static java.util.function.Predicate.not;
 
@@ -61,8 +55,10 @@ public class HotJoin {
 	// That way, it's clear which mod wrote info, warnings, and errors.
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 	public static final ResourceLocation AVABVB = ResourceLocation.parse("ava:bvb");
+	public static final ArrayList<UUID> INSTANCES = new ArrayList<>();
+	public static final HashMap<UUID, ServerPlayer> uuidPlayerMap = new HashMap<>();
 
-
+	private Wrapped wrapped = null;
 	byte[] bytes;
 	public void onInitialize() throws IOException {
 		System.out.println(System.getProperties());
@@ -91,14 +87,30 @@ public class HotJoin {
 //			hotJoin(null);
 //		});
 		PayloadTypeRegistry.playC2S().register(KidneyPayload.TYPE, KidneyPayload.STREAM_CODEC);
+		PayloadTypeRegistry.playC2S().register(AlohaPayload.TYPE, AlohaPayload.STREAM_CODEC);
+		PayloadTypeRegistry.playS2C().register(SteamPayload.TYPE, SteamPayload.STREAM_CODEC);
 
-		ServerPlayNetworking.registerGlobalReceiver(KidneyPayload.TYPE, (payload, context) -> {
-			//System.out.println("Received kidney, size " + payload.b().length);
-//			if (bytes == null)
-//			bytes = payload.b();
-//			NativeImage nativeImage = crashgoByeBye(() -> NativeImage.read(payload.b()));
-//			if (currentNativeImage[0] != null) currentNativeImage[0].close(); // don't want to leak 60 images a second
-//			currentNativeImage[0] = nativeImage;
+		ClientPlayNetworking.registerGlobalReceiver(SteamPayload.TYPE, (payload, context) -> {
+			context.client().execute(() -> {
+				if (wrapped == null) wrapped = wrap(Minecraft.getInstance());
+				int val = payload.val();
+				switch (payload.in()) {
+					case Instructions.WIDTH -> wrapped.width(val);
+					case Instructions.HEIGHT -> wrapped.height(val);
+					case Instructions.X -> wrapped.x(val);
+					case Instructions.Y -> wrapped.y(val);
+					case Instructions.APPLY -> {
+						wrapped.apply();
+						wrapped = null;
+					}
+				}
+			});
+		});
+		ServerPlayNetworking.registerGlobalReceiver(AlohaPayload.TYPE, (payload, context) -> {
+			if (INSTANCES.contains(payload.uuid())) {
+				uuidPlayerMap.put(payload.uuid(), context.player());
+				arrangeWindows();
+			}
 		});
 
 //		HudRenderCallback.EVENT.register((drawContext, tickCounter) -> {
@@ -112,6 +124,9 @@ public class HotJoin {
 
 		boolean hotjoinClient = System.getProperty("hotjoin.client", "false").equals("true");
 		String hotjoinServer = System.getProperty("hotjoin.server", "");
+		long hotjoinWindow = Long.parseLong(System.getProperty("hotjoin.window", "0"));
+		String t = System.getProperty("hotjoin.uuid", "");
+		UUID hotjoinUUID = t.isEmpty() ? null : UUID.fromString(t);
 		boolean[] firstTime = new boolean[]{true};
 		if (hotjoinClient) {
 			ScreenEvents.AFTER_INIT.register((client, screen, scaledWidth, scaledHeight) -> {
@@ -122,14 +137,174 @@ public class HotJoin {
 					}
 				}
 			});
-			ClientTickEvents.END_CLIENT_TICK.register(client -> {
-				if (client.level != null) {
-					// if this leaks, well...
-					byte[] mcWindowContents = crashgoByeBye(this::getMCWindowContents);
-					ClientPlayNetworking.send(new KidneyPayload(mcWindowContents));
-				}
+
+//			ClientPlayConnectionEvents.INIT.register((handler, client) -> {
+//				//ClientPlayNetworking.send(new AlohaPayload());
+//
+//			});
+			ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
+				sender.sendPacket(new AlohaPayload(hotjoinUUID));
 			});
+
+
+//			ClientTickEvents.END_CLIENT_TICK.register(client -> {
+//				if (client.level != null) {
+//					//Screenshot.grab();
+//					// if this leaks, well...
+//					byte[] mcWindowContents = crashgoByeBye(this::getMCWindowContents);
+//					ClientPlayNetworking.send(new KidneyPayload(mcWindowContents));
+//				}
+//			});
 		}
+	}
+
+	@SuppressWarnings("SequencedCollectionMethodCanBeUsed")
+	public static void arrangeWindows() {
+		Wrapped wrap = wrap(Minecraft.getInstance());
+		ArrayList<Wrapped> wrappeds = new ArrayList<>();
+		wrappeds.add(wrap);
+		for (UUID instance : uuidPlayerMap.keySet()) {
+			wrappeds.add(wrap(instance));
+		}
+		// get monitor width and height
+		Monitor bestMonitor = ((WindowAccessor) (Object) Minecraft.getInstance().getWindow()).getScreenManager().findBestMonitor(Minecraft.getInstance().getWindow());
+		assert bestMonitor != null;
+		int width = bestMonitor.getMode(0).getWidth();
+		int height = bestMonitor.getMode(0).getHeight();
+
+		if (wrappeds.size() == 1) {
+			Wrapped wrapped = wrappeds.get(0);
+			wrapped.x(0);
+			wrapped.y(0);
+			wrapped.width(width);
+			wrapped.height(height);
+			wrapped.apply();
+		} else if (wrappeds.size() == 2) {
+			Wrapped wrapped = wrappeds.get(0);
+			wrapped.x(0);
+			wrapped.y(0);
+			wrapped.width(width);
+			wrapped.height(height / 2);
+			wrapped.apply();
+
+			wrapped = wrappeds.get(1);
+			wrapped.x(0);
+			wrapped.y(height / 2);
+			wrapped.width(width);
+			wrapped.height(height / 2);
+			wrapped.apply();
+		}
+	}
+
+	interface Wrapped {
+		int getId(); // support up to 4
+		void width(int width);
+		void height(int height);
+		void x(int x);
+		void y(int y);
+		void apply();
+	}
+	private static Wrapped wrap(Minecraft minecraft) {
+		return new Wrapped() {
+			@Override
+			public int getId() {
+				return 0;
+			}
+
+			private int width = Integer.MIN_VALUE;
+			private int height = Integer.MIN_VALUE;
+			private int x = Integer.MIN_VALUE;
+			private int y = Integer.MIN_VALUE;
+			@Override
+			public void width(int width) {
+				this.width = width;
+			}
+
+			@Override
+			public void height(int height) {
+				this.height = height;
+			}
+
+			@Override
+			public void x(int x) {
+				this.x = x;
+			}
+
+			@Override
+			public void y(int y) {
+				this.y = y;
+			}
+
+			@Override
+			public void apply() {
+				ConcentrationConfigFabric instance = ConcentrationConfigFabric.getInstance();
+				instance.fullscreen = FullscreenMode.BORDERLESS;
+				instance.customized = true;
+				if (x != Integer.MIN_VALUE) {
+					instance.x = x;
+					x = Integer.MIN_VALUE;
+				}
+				if (y != Integer.MIN_VALUE) {
+					instance.y = y;
+					y = Integer.MIN_VALUE;
+				}
+				if (width != Integer.MIN_VALUE) {
+					instance.width = width;
+					width = Integer.MIN_VALUE;
+				}
+				if (height != Integer.MIN_VALUE) {
+					instance.height = height;
+					height = Integer.MIN_VALUE;
+				}
+				instance.save();
+				RenderSystem.recordRenderCall(() -> Concentration.toggleFullScreenMode(Minecraft.getInstance().options, true));
+			}
+		};
+	}
+
+	private static class Instructions {
+		public static final int WIDTH = 0;
+		public static final int HEIGHT = 1;
+		public static final int X = 2;
+		public static final int Y = 3;
+		private static final int APPLY = 4;
+	}
+	private static Wrapped wrap(UUID player) {
+		ServerPlayer serverPlayer = uuidPlayerMap.get(player);
+		return new Wrapped() {
+			@Override
+			public int getId() {
+				return INSTANCES.indexOf(player);
+			}
+			private void send(int a, int b) {
+				ServerPlayNetworking.send(serverPlayer, new SteamPayload(a, b));
+			}
+
+			@Override
+			public void width(int width) {
+				send(Instructions.WIDTH, width);
+			}
+
+			@Override
+			public void height(int height) {
+				send(Instructions.HEIGHT, height);
+			}
+
+			@Override
+			public void x(int x) {
+				send(Instructions.X, x);
+			}
+
+			@Override
+			public void y(int y) {
+				send(Instructions.Y, y);
+			}
+
+			@Override
+			public void apply() {
+				send(Instructions.APPLY, 0);
+			}
+		};
 	}
 
 	@FunctionalInterface
@@ -167,6 +342,8 @@ public class HotJoin {
 
 	// The goal is to launch Minecraft a second time, under a different directory.
 	private void launchMinecraftClient() throws IOException {
+		UUID uuid = UUID.randomUUID();
+		INSTANCES.add(uuid);
 		IntegratedServer singleplayerServer = Minecraft.getInstance().getSingleplayerServer();
 		singleplayerServer.publishServer(singleplayerServer.getDefaultGameType(), singleplayerServer.getPlayerList().isAllowCommandsForAllPlayers(), 3600);
 		//String ip = Minecraft.getInstance().getConnection().getServerData().ip;
@@ -208,6 +385,10 @@ public class HotJoin {
 		l = ArrayUtils.addAll(l, "java", "-XstartOnFirstThread");
 		if (!System.getProperty("fabric.remapClasspathFile", "").isEmpty()) l = ArrayUtils.addAll(l, "-Dfabric.remapClasspathFile=" + System.getProperty("fabric.remapClasspathFile"));
 		l = ArrayUtils.addAll(l, "-Dhotjoin.client=true", "-Dhotjoin.server=localhost:" + singleplayerServer.getPort(), "-Dfabric.development=true", addMods);
+		l = ArrayUtils.addAll(l,
+				"-Dhotjoin.window=" + Minecraft.getInstance().getWindow().getWindow(),
+				"-Dhotjoin.uuid=" + uuid
+		);
 		l = ArrayUtils.addAll(l, "-cp", cp, "net.fabricmc.loader.impl.launch.knot.KnotClient");
 		l = ArrayUtils.addAll(l, launchArguments);
 		//l = ArrayUtils.addAll(l, "--quickPlayMultiplayer", "hotjoin-lanlocalhost:" + singleplayerServer.getPort() /*"localhost:%s".formatted(singleplayerServer.getPort())*/);
