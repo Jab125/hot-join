@@ -81,6 +81,7 @@ public class HotJoin {
 
 			dispatcher.register(command);
 		});
+		//noinspection removal
 		PayloadTypeRegistry.playC2S().register(KidneyPayload.TYPE, KidneyPayload.STREAM_CODEC);
 		PayloadTypeRegistry.playC2S().register(AlohaPayload.TYPE, AlohaPayload.STREAM_CODEC);
 		PayloadTypeRegistry.playS2C().register(SteamPayload.TYPE, SteamPayload.STREAM_CODEC);
