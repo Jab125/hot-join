@@ -20,7 +20,9 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
+import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
@@ -111,6 +113,15 @@ public class HotJoin {
 				uuidPlayerMap.put(payload.uuid(), context.player());
 				arrangeWindows();
 			}
+		});
+		ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> {
+			Optional<Map.Entry<UUID, ServerPlayer>> first = uuidPlayerMap.entrySet().stream().filter(a -> a.getValue() == handler.player).findFirst();
+			if (first.isPresent()) {
+				UUID key = first.get().getKey();
+				INSTANCES.remove(key);
+				uuidPlayerMap.remove(key);
+			}
+			arrangeWindows();
 		});
 
 //		HudRenderCallback.EVENT.register((drawContext, tickCounter) -> {
