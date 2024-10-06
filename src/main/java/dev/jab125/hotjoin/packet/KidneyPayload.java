@@ -6,6 +6,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 
+@Deprecated(forRemoval = true)
 public record KidneyPayload(int x, int y, int width, int height) implements CustomPacketPayload {
 	public static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("hotjoin", "kidney");
 	public static final CustomPacketPayload.Type<KidneyPayload> TYPE = new CustomPacketPayload.Type<>(KidneyPayload.ID);

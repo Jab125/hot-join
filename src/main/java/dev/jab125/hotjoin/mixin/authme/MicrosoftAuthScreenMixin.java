@@ -7,13 +7,12 @@ import dev.jab125.hotjoin.util.AuthCallback;
 import dev.jab125.hotjoin.util.HotJoinCodecs;
 import me.axieum.mcmod.authme.api.gui.AuthScreen;
 import me.axieum.mcmod.authme.impl.gui.MicrosoftAuthScreen;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.User;
-import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
-import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -21,7 +20,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.io.IOException;
 import java.util.Base64;
 import java.util.function.Consumer;
 
@@ -33,7 +31,7 @@ public abstract class MicrosoftAuthScreenMixin extends AuthScreen implements Aut
 	private @Unique @Nullable Consumer<String> authResponse;
 
 	@Inject(method = "lambda$init$7", at = @At("HEAD"), cancellable = true)
-	void d(User session, CallbackInfo ci) throws IOException {
+	void d(User session, CallbackInfo ci) {
 		try {
 			if (authResponse == null) return;
 			Tag tag = HotJoinCodecs.USER_CODEC.encodeStart(NbtOps.INSTANCE, session).resultOrPartial(HotJoin.LOGGER::error).orElseThrow();
@@ -44,7 +42,7 @@ public abstract class MicrosoftAuthScreenMixin extends AuthScreen implements Aut
 			ci.cancel();
 			return;
 		} catch (Throwable t) {
-			t.printStackTrace();
+			HotJoin.LOGGER.info("Error authenticating via {}!", FabricLoader.getInstance().getModContainer("authme").orElseThrow().getMetadata().getName());
 		}
 		ci.cancel();
 	}
