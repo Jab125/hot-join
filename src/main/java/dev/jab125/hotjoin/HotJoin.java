@@ -2,8 +2,6 @@ package dev.jab125.hotjoin;
 
 import com.google.common.io.ByteStreams;
 import com.mojang.blaze3d.platform.Monitor;
-import com.mojang.blaze3d.platform.NativeImage;
-import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.brigadier.context.CommandContext;
 import dev.jab125.hotjoin.packet.AlohaPayload;
@@ -21,11 +19,9 @@ import net.deechael.concentration.mixin.accessor.WindowAccessor;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
-import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
@@ -33,17 +29,14 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
 import net.fabricmc.loader.api.metadata.ModOrigin;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.Screenshot;
 import net.minecraft.client.gui.screens.AccessibilityOnboardingScreen;
 import net.minecraft.client.gui.screens.ConnectScreen;
 import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.multiplayer.resolver.ServerAddress;
-import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
@@ -64,21 +57,15 @@ public class HotJoin {
 	// It is considered best practice to use your mod id as the logger's name.
 	// That way, it's clear which mod wrote info, warnings, and errors.
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
-	public static final ResourceLocation AVABVB = ResourceLocation.parse("ava:bvb");
 	public static final ArrayList<UUID> INSTANCES = new ArrayList<>();
 	public static final HashMap<UUID, ServerPlayer> uuidPlayerMap = new HashMap<>();
 
 	private Wrapped wrapped = null;
 	byte[] bytes;
-	public void onInitialize() throws IOException {
-		System.out.println(System.getProperties());
+	public void onInitialize() {
 		// This code runs as soon as Minecraft is in a mod-load-ready state.
 		// However, some things (like resources) may still be uninitialized.
 		// Proceed with mild caution.
-
-		//launchMinecraftClient();
-		//QuickPlay quickPlay = new QuickPlay();
-		LOGGER.info("Hello Fabric world!");
 		ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
 			var command = ClientCommandManager.literal("hotjoin");
 			if (FabricLoader.getInstance().isModLoaded("authme")) {
@@ -91,20 +78,9 @@ public class HotJoin {
 			if (FabricLoader.getInstance().isDevelopmentEnvironment()) {
 				command.executes(v -> hotJoin(false, v));
 			}
-			var c = ClientCommandManager.literal("screenshot").executes(a -> {
-				try {
-					getMCWindowContents();
-					return 0;
-				} catch (IOException e) {
-					throw new RuntimeException(e);
-				}
-			});
-			dispatcher.register(c);
+
 			dispatcher.register(command);
 		});
-//		ClientTickEvents.START_CLIENT_TICK.register(client -> {
-//			hotJoin(null);
-//		});
 		PayloadTypeRegistry.playC2S().register(KidneyPayload.TYPE, KidneyPayload.STREAM_CODEC);
 		PayloadTypeRegistry.playC2S().register(AlohaPayload.TYPE, AlohaPayload.STREAM_CODEC);
 		PayloadTypeRegistry.playS2C().register(SteamPayload.TYPE, SteamPayload.STREAM_CODEC);
@@ -141,15 +117,6 @@ public class HotJoin {
 			arrangeWindows();
 		});
 
-//		HudRenderCallback.EVENT.register((drawContext, tickCounter) -> {
-//			if (bytes != null) {
-//				DynamicTexture dynamicTexture = new DynamicTexture(crashgoByeBye(() -> NativeImage.read(bytes)));
-//				Minecraft.getInstance().getTextureManager().register(AVABVB, dynamicTexture);
-//				drawContext.blit(AVABVB, 0, 0, 100, 100, 0, 0);
-//				dynamicTexture.close();
-//			}
-//		});
-
 		boolean hotjoinClient = System.getProperty("hotjoin.client", "false").equals("true");
 		String hotjoinServer = System.getProperty("hotjoin.server", "");
 		long hotjoinWindow = Long.parseLong(System.getProperty("hotjoin.window", "0"));
@@ -171,26 +138,12 @@ public class HotJoin {
 				}
 			});
 
-//			ClientPlayConnectionEvents.INIT.register((handler, client) -> {
-//				//ClientPlayNetworking.send(new AlohaPayload());
-//
-//			});
 			ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
 				sender.sendPacket(new AlohaPayload(hotjoinUUID));
 			});
 			ClientPlayConnectionEvents.DISCONNECT.register((clientPacketListener,c) -> {
 				c.stop();
 			});
-
-
-//			ClientTickEvents.END_CLIENT_TICK.register(client -> {
-//				if (client.level != null) {
-//					//Screenshot.grab();
-//					// if this leaks, well...
-//					byte[] mcWindowContents = crashgoByeBye(this::getMCWindowContents);
-//					ClientPlayNetworking.send(new KidneyPayload(mcWindowContents));
-//				}
-//			});
 		}
 	}
 
@@ -365,7 +318,7 @@ public class HotJoin {
 					MicrosoftAuthScreen microsoftAuthScreen = new MicrosoftAuthScreen(Minecraft.getInstance().screen, null, true);
 					((AuthCallback) microsoftAuthScreen).hotjoin$authResponse(s -> {
 						try {
-							System.out.println("Got a response!: " + s);
+							//System.out.println("Got a response!: " + s);
 							launchMinecraftClient(s);
 						} catch (IOException e) {
 							throw new RuntimeException(e);
@@ -382,15 +335,6 @@ public class HotJoin {
 		return 0;
 	}
 
-	private byte[] getMCWindowContents() throws IOException {
-		Window window = Minecraft.getInstance().getWindow();
-		int height = window.getHeight();
-		int width = window.getWidth();
-		NativeImage nativeImage = Screenshot.takeScreenshot(Minecraft.getInstance().getMainRenderTarget());
-		//nativeImage.writeToFile(Path.of("test.png"));
-		return nativeImage.asByteArray();
-	}
-
 	// The goal is to launch Minecraft a second time, under a different directory.
 	private void launchMinecraftClient(String magic) throws IOException {
 		if (magic != null) magic = magic.replace("=", "$");
@@ -398,8 +342,6 @@ public class HotJoin {
 		INSTANCES.add(uuid);
 		IntegratedServer singleplayerServer = Minecraft.getInstance().getSingleplayerServer();
 		singleplayerServer.publishServer(singleplayerServer.getDefaultGameType(), singleplayerServer.getPlayerList().isAllowCommandsForAllPlayers(), 3600);
-		//String ip = Minecraft.getInstance().getConnection().getServerData().ip;
-		//System.out.println(ip);
 		String[] launchArguments = FabricLoader.getInstance().getLaunchArguments(false);
 		int i = 0;
 		for (String launchArgument : launchArguments) {
@@ -411,29 +353,21 @@ public class HotJoin {
 		Path path = Path.of("second");
 		path.toFile().mkdirs();
 		launchArguments[i + 1] = path.toAbsolutePath().toString();
-		//KnotClient
 		String cp = System.getProperty("java.class.path");
 		List<String> splitClassPath = Arrays.stream(cp.split(File.pathSeparator)).toList();
 		String addMods = "-Dfabric.addMods=";
 		ArrayList<String> fjio = new ArrayList<>();
 		for (ModContainer allMod : FabricLoader.getInstance().getAllMods()) {
-			//System.out.println(allMod.getMetadata().getId() + ": " + allMod.getOrigin().getKind() + ", " + allMod.getOrigin().getPaths() + ", " + allMod.getRootPaths());
 			if (allMod.getOrigin().getKind() == ModOrigin.Kind.PATH) {
 				String id = allMod.getMetadata().getId();
 				if (id.equals("minecraft") || id.equals("java") || id.equals("fabricloader") || id.equals("mixinextras"))
 					continue;
 				String[] array = allMod.getOrigin().getPaths().stream().map(Path::toAbsolutePath).map(Path::toString).filter(not(splitClassPath::contains)).toArray(String[]::new);
 				fjio.addAll(Arrays.asList(array));
-//				System.out.println(Arrays.toString(array));
-//				addMods += String.join(File.pathSeparator, array);
 			}
 		}
 		addMods += String.join(File.pathSeparator, fjio);
-		//FabricLoaderImpl
-		//addMods = addMods.substring(0, addMods.length() - 1);
-		System.out.println(addMods);
-		var l = new String[0]; //new String[]{"java", "-XstartOnFirstThread", "-cp", cp, "net.fabricmc.loader.impl.launch.knot.KnotClient"};
-		//LoaderUtil
+		var l = new String[0];
 		l = ArrayUtils.addAll(l, "java");
 		if (Minecraft.ON_OSX) l = ArrayUtils.addAll(l, "-XstartOnFirstThread");
 		if (!System.getProperty("fabric.remapClasspathFile", "").isEmpty()) l = ArrayUtils.addAll(l, "-Dfabric.remapClasspathFile=" + System.getProperty("fabric.remapClasspathFile"));
@@ -446,12 +380,8 @@ public class HotJoin {
 		if (magic != null) l = ArrayUtils.addAll(l, "-Dhotjoin.magic=" + magic);
 		l = ArrayUtils.addAll(l, "-cp", cp, "net.fabricmc.loader.impl.launch.knot.KnotClient");
 		l = ArrayUtils.addAll(l, launchArguments);
-		//l = ArrayUtils.addAll(l, "--quickPlayMultiplayer", "hotjoin-lanlocalhost:" + singleplayerServer.getPort() /*"localhost:%s".formatted(singleplayerServer.getPort())*/);
 		ProcessBuilder exec = new ProcessBuilder().directory(path.toFile()).command(l).redirectOutput(ProcessBuilder.Redirect.INHERIT)
 				.redirectError(ProcessBuilder.Redirect.INHERIT);
 		exec.start();
-		//System.out.println("STARTED");
-		System.out.println(Arrays.toString(launchArguments));
-		//QuickPlay.connect();
 	}
 }
