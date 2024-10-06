@@ -178,6 +178,9 @@ public class HotJoin {
 			ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
 				sender.sendPacket(new AlohaPayload(hotjoinUUID));
 			});
+			ClientPlayConnectionEvents.DISCONNECT.register((clientPacketListener,c) -> {
+				c.stop();
+			});
 
 
 //			ClientTickEvents.END_CLIENT_TICK.register(client -> {
@@ -439,7 +442,7 @@ public class HotJoin {
 				"-Dhotjoin.window=" + Minecraft.getInstance().getWindow().getWindow(),
 				"-Dhotjoin.uuid=" + uuid
 		);
-		if (FabricLoader.getInstance().isDevelopmentEnvironment()) ArrayUtils.addAll(l, "-Dfabric.development=true");
+		if (FabricLoader.getInstance().isDevelopmentEnvironment()) l = ArrayUtils.addAll(l, "-Dfabric.development=true");
 		if (magic != null) l = ArrayUtils.addAll(l, "-Dhotjoin.magic=" + magic);
 		l = ArrayUtils.addAll(l, "-cp", cp, "net.fabricmc.loader.impl.launch.knot.KnotClient");
 		l = ArrayUtils.addAll(l, launchArguments);
