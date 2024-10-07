@@ -184,8 +184,10 @@ public class HotJoin {
 		Wrapped wrap = wrap(Minecraft.getInstance());
 		ArrayList<Wrapped> wrappeds = new ArrayList<>();
 		wrappeds.add(wrap);
-		for (UUID instance : uuidPlayerMap.keySet()) {
-			wrappeds.add(wrap(instance));
+		for (UUID instance : INSTANCES) {
+			if (uuidPlayerMap.containsKey(instance)) {
+				wrappeds.add(wrap(instance));
+			}
 		}
 		// get monitor width and height
 		Monitor bestMonitor = ((WindowAccessor) (Object) Minecraft.getInstance().getWindow()).getScreenManager().findBestMonitor(Minecraft.getInstance().getWindow());
