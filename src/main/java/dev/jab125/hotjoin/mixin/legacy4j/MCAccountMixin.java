@@ -28,6 +28,7 @@ public interface MCAccountMixin {
 	@Inject(method = "login(Lwily/legacy/client/screen/ChooseUserScreen;Ljava/lang/String;)V", at = @At("HEAD"))
 	default void interceptSimpleLogin(ChooseUserScreen screen, String password, CallbackInfo ci) {
 		if (((AuthCallback)screen).hotjoin$authResponse() != null) Legacy4JModCompat.authConsumer = ((AuthCallback)screen).hotjoin$authResponse();
+		else Legacy4JModCompat.authConsumer = null;
 	}
 
 	@Inject(method = "lambda$login$0", at = @At(value = "INVOKE", target = "Lwily/legacy/client/screen/ChooseUserScreen;reloadAccountButtons()V", shift = At.Shift.AFTER), cancellable = true)
