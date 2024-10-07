@@ -142,7 +142,7 @@ public class HotJoin {
 		String hotjoinServer = System.getProperty("hotjoin.server", "");
 		String t = System.getProperty("hotjoin.uuid", "");
 		UUID hotjoinUUID = t.isEmpty() ? null : UUID.fromString(t);
-		boolean[] firstTime = new boolean[]{true, true};
+		boolean[] firstTime = new boolean[]{true, true, true};
 		String magic = System.getProperty("hotjoin.magic", "");
 		String compatString = System.getProperty("hotjoin.compat", "authme");
 		IModCompat compat = "authme".equals(compatString) ? authMeCompat : "legacy4j".equals(compatString) ? legacy4JModCompat : null;
@@ -159,7 +159,13 @@ public class HotJoin {
 							if (!legacy4jData.isEmpty()) legacy4JModCompat.joinedWorld();
 							if (!magic.isEmpty()) compat.setSession(HotJoinCodecs.USER_CODEC.decode(NbtOps.INSTANCE, crashgoByeBye(() ->NbtIo.read(ByteStreams.newDataInput(Base64.getDecoder().decode(magic.replace("$", "=")))))).resultOrPartial(LOGGER::error).orElseThrow().getFirst());
 						}
-						this.join(new ServerData("A Minecraftc nk∆∆i¶•†¥", hotjoinServer, ServerData.Type.LAN));
+						if (firstTime[2]) {
+							this.join(new ServerData("A Minecraftc nk∆∆i¶•†¥", hotjoinServer, ServerData.Type.LAN));
+							firstTime[2] = false;
+						} else {
+							// we failed to join, we don't want to end up in a loop, so we end now
+							client.stop();
+						}
 					}
 				}
 			});
