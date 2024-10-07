@@ -13,7 +13,7 @@
 	},
 	"license": "LGPL-2.1-only",
 	"icon": "assets/hot-join/icon.png",
-	"environment": "*",
+	"environment": "client",
 	"entrypoints": {
 		"main": [
 			"dev.jab125.hotjoin.HotJoin::onInitialize"
