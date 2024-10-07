@@ -4,12 +4,14 @@ import com.google.common.io.ByteStreams;
 import com.mojang.blaze3d.platform.Monitor;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.brigadier.context.CommandContext;
+import dev.jab125.hotjoin.compat.IModCompat;
+import dev.jab125.hotjoin.compat.authme.IAuthMeModCompat;
+import dev.jab125.hotjoin.compat.authme.AuthMeCompat;
+import dev.jab125.hotjoin.compat.legacy4j.ILegacy4JModCompat;
+import dev.jab125.hotjoin.compat.legacy4j.Legacy4JModCompat;
 import dev.jab125.hotjoin.packet.AlohaPayload;
 import dev.jab125.hotjoin.packet.SteamPayload;
-import dev.jab125.hotjoin.util.AuthCallback;
 import dev.jab125.hotjoin.util.HotJoinCodecs;
-import me.axieum.mcmod.authme.api.util.SessionUtils;
-import me.axieum.mcmod.authme.impl.gui.MicrosoftAuthScreen;
 import net.deechael.concentration.Concentration;
 import net.deechael.concentration.FullscreenMode;
 import net.deechael.concentration.fabric.config.ConcentrationConfigFabric;
@@ -58,6 +60,8 @@ public class HotJoin {
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 	public static final ArrayList<UUID> INSTANCES = new ArrayList<>();
 	public static final HashMap<UUID, ServerPlayer> uuidPlayerMap = new HashMap<>();
+	public static IAuthMeModCompat authMeCompat;
+	public static ILegacy4JModCompat legacy4JModCompat;
 
 	private Wrapped wrapped = null;
 	byte[] bytes;
@@ -65,17 +69,24 @@ public class HotJoin {
 		// This code runs as soon as Minecraft is in a mod-load-ready state.
 		// However, some things (like resources) may still be uninitialized.
 		// Proceed with mild caution.
+		if (FabricLoader.getInstance().isModLoaded("authme")) {
+			authMeCompat = new AuthMeCompat();
+		} else {
+			authMeCompat = null;
+		}
+		if (FabricLoader.getInstance().isModLoaded("legacy4j")) {
+			legacy4JModCompat = new Legacy4JModCompat();
+		} else {
+			legacy4JModCompat = null;
+		}
 		ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
 			var command = ClientCommandManager.literal("hotjoin");
 			if (FabricLoader.getInstance().isModLoaded("authme")) {
-				Supplier<Supplier<Runnable>> f = () -> () -> () -> {
-					command.then(ClientCommandManager.literal("authme").then(ClientCommandManager.literal("microsoft").executes(v -> hotJoin(true, v))));
-				};
-				f.get().get().run();
+				command.then(ClientCommandManager.literal("authme").then(ClientCommandManager.literal("microsoft").executes(authMeCompat::hotJoinAuthMeMicrosoft)));
 			}
 
 			if (FabricLoader.getInstance().isDevelopmentEnvironment()) {
-				command.executes(v -> hotJoin(false, v));
+				command.executes(this::hotJoin);
 			}
 
 			dispatcher.register(command);
@@ -117,12 +128,16 @@ public class HotJoin {
 			arrangeWindows();
 		});
 
+
 		boolean hotjoinClient = System.getProperty("hotjoin.client", "false").equals("true");
 		String hotjoinServer = System.getProperty("hotjoin.server", "");
 		String t = System.getProperty("hotjoin.uuid", "");
 		UUID hotjoinUUID = t.isEmpty() ? null : UUID.fromString(t);
 		boolean[] firstTime = new boolean[]{true, true};
 		String magic = System.getProperty("hotjoin.magic", "");
+		String compatString = System.getProperty("hotjoin.compat", "authme");
+		IModCompat compat = "authme".equals(compatString) ? authMeCompat : "legacy4j".equals(compatString) ? legacy4JModCompat : null;
+
 		if (hotjoinClient) {
 			ScreenEvents.AFTER_INIT.register((client, screen, scaledWidth, scaledHeight) -> {
 				if (screen instanceof TitleScreen || screen instanceof AccessibilityOnboardingScreen) {
@@ -130,7 +145,7 @@ public class HotJoin {
 					else {
 						if (firstTime[1]) {
 							firstTime[1] = false;
-							if (!magic.isEmpty()) SessionUtils.setSession(HotJoinCodecs.USER_CODEC.decode(NbtOps.INSTANCE, crashgoByeBye(() ->NbtIo.read(ByteStreams.newDataInput(Base64.getDecoder().decode(magic.replace("$", "=")))))).resultOrPartial(LOGGER::error).orElseThrow().getFirst());
+							if (!magic.isEmpty()) compat.setSession(HotJoinCodecs.USER_CODEC.decode(NbtOps.INSTANCE, crashgoByeBye(() ->NbtIo.read(ByteStreams.newDataInput(Base64.getDecoder().decode(magic.replace("$", "=")))))).resultOrPartial(LOGGER::error).orElseThrow().getFirst());
 						}
 						this.join(new ServerData("A Minecraftc nk∆∆i¶•†¥", hotjoinServer, ServerData.Type.LAN));
 					}
@@ -310,24 +325,12 @@ public class HotJoin {
 		ConnectScreen.startConnecting(new TitleScreen(), Minecraft.getInstance(), ServerAddress.parseString(serverData.ip), serverData, false, null);
 	}
 
-	private int hotJoin(boolean michaelsoft, CommandContext<FabricClientCommandSource> a) {
+
+
+
+	private int hotJoin(CommandContext<FabricClientCommandSource> a) {
 		try {
-			if (michaelsoft) {
-				a.getSource().getClient().tell(() -> {
-					MicrosoftAuthScreen microsoftAuthScreen = new MicrosoftAuthScreen(Minecraft.getInstance().screen, null, true);
-					((AuthCallback) microsoftAuthScreen).hotjoin$authResponse(s -> {
-						try {
-							//System.out.println("Got a response!: " + s);
-							launchMinecraftClient(s);
-						} catch (IOException e) {
-							throw new RuntimeException(e);
-						}
-					});
-					Minecraft.getInstance().setScreen(microsoftAuthScreen);
-				});
-			} else {
-				launchMinecraftClient(null);
-			}
+			launchMinecraftClient(null, null);
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
@@ -335,7 +338,7 @@ public class HotJoin {
 	}
 
 	// The goal is to launch Minecraft a second time, under a different directory.
-	private void launchMinecraftClient(String magic) throws IOException {
+	public static void launchMinecraftClient(String compat, String magic) throws IOException {
 		if (magic != null) magic = magic.replace("=", "$");
 		UUID uuid = UUID.randomUUID();
 		INSTANCES.add(uuid);
@@ -374,6 +377,7 @@ public class HotJoin {
 		l = ArrayUtils.addAll(l,
 				"-Dhotjoin.uuid=" + uuid
 		);
+		if (compat != null) l = ArrayUtils.addAll(l, "-Dhotjoin.compat=" + compat);
 		if (FabricLoader.getInstance().isDevelopmentEnvironment()) l = ArrayUtils.addAll(l, "-Dfabric.development=true");
 		if (magic != null) l = ArrayUtils.addAll(l, "-Dhotjoin.magic=" + magic);
 		l = ArrayUtils.addAll(l, "-cp", cp, "net.fabricmc.loader.impl.launch.knot.KnotClient");
