@@ -229,6 +229,34 @@ public class HotJoin {
 			wrapped.width(width);
 			wrapped.height(height / 2);
 			wrapped.apply();
+		} else if (wrappeds.size() == 4) {
+			Wrapped wrapped = wrappeds.get(0);
+			wrapped.x(0);
+			wrapped.y(0);
+			wrapped.width(width / 2);
+			wrapped.height(height / 2);
+			wrapped.apply();
+
+			wrapped = wrappeds.get(1);
+			wrapped.x(width / 2);
+			wrapped.y(0);
+			wrapped.width(width / 2);
+			wrapped.height(height / 2);
+			wrapped.apply();
+
+			wrapped = wrappeds.get(2);
+			wrapped.x(0);
+			wrapped.y(height / 2);
+			wrapped.width(width / 2);
+			wrapped.height(height / 2);
+			wrapped.apply();
+
+			wrapped = wrappeds.get(3);
+			wrapped.x(width / 2);
+			wrapped.y(height / 2);
+			wrapped.width(width / 2);
+			wrapped.height(height / 2);
+			wrapped.apply();
 		}
 	}
 
