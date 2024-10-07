@@ -70,6 +70,8 @@ public class HotJoin {
 		// This code runs as soon as Minecraft is in a mod-load-ready state.
 		// However, some things (like resources) may still be uninitialized.
 		// Proceed with mild caution.
+		boolean hotjoinClient = System.getProperty("hotjoin.client", "false").equals("true");
+
 		if (FabricLoader.getInstance().isModLoaded("authme")) {
 			authMeCompat = new AuthMeCompat();
 		} else {
@@ -80,22 +82,24 @@ public class HotJoin {
 		} else {
 			legacy4JModCompat = null;
 		}
-		ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
-			var command = ClientCommandManager.literal("hotjoin");
-			if (FabricLoader.getInstance().isModLoaded("authme")) {
-				command.then(ClientCommandManager.literal("authme").then(ClientCommandManager.literal("microsoft").executes(authMeCompat::hotJoinAuthMeMicrosoft)));
-			}
+		if (!hotjoinClient) {
+			ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
+				var command = ClientCommandManager.literal("hotjoin");
+				if (FabricLoader.getInstance().isModLoaded("authme")) {
+					command.then(ClientCommandManager.literal("authme").then(ClientCommandManager.literal("microsoft").executes(authMeCompat::hotJoinAuthMeMicrosoft)));
+				}
 
-			if (FabricLoader.getInstance().isModLoaded("legacy")) {
-				command.then(ClientCommandManager.literal("legacy4j").executes(legacy4JModCompat::hotJoinLegacy4J));
-			}
+				if (FabricLoader.getInstance().isModLoaded("legacy")) {
+					command.then(ClientCommandManager.literal("legacy4j").executes(legacy4JModCompat::hotJoinLegacy4J));
+				}
 
-			if (FabricLoader.getInstance().isDevelopmentEnvironment()) {
-				command.executes(this::hotJoin);
-			}
+				if (FabricLoader.getInstance().isDevelopmentEnvironment()) {
+					command.executes(this::hotJoin);
+				}
 
-			dispatcher.register(command);
-		});
+				dispatcher.register(command);
+			});
+		}
 		//noinspection removal
 		PayloadTypeRegistry.playC2S().register(dev.jab125.hotjoin.packet.KidneyPayload.TYPE, dev.jab125.hotjoin.packet.KidneyPayload.STREAM_CODEC);
 		PayloadTypeRegistry.playC2S().register(AlohaPayload.TYPE, AlohaPayload.STREAM_CODEC);
@@ -135,7 +139,6 @@ public class HotJoin {
 		});
 
 
-		boolean hotjoinClient = System.getProperty("hotjoin.client", "false").equals("true");
 		String hotjoinServer = System.getProperty("hotjoin.server", "");
 		String t = System.getProperty("hotjoin.uuid", "");
 		UUID hotjoinUUID = t.isEmpty() ? null : UUID.fromString(t);
