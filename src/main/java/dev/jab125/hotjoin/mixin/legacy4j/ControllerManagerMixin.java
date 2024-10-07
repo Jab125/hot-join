@@ -41,6 +41,7 @@ public class ControllerManagerMixin {
 
 					// oh noe
 					GLFWGamepadState gamepadState = GLFWGamepadState.calloc();
+					// this _should_ be safe, right?
 					gamepadState.free();
 					if (GLFW.glfwGetGamepadState(i, gamepadState)) {
 						//manager.updateBindings();
@@ -56,8 +57,6 @@ public class ControllerManagerMixin {
 							//System.out.println(controller.getName() + " is holding down the guide button!");
 						}
 					}
-					// this _should_ be safe, right?
-
 				}
 			}
 		}
