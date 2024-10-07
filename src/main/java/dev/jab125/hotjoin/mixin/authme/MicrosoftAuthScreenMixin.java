@@ -51,4 +51,9 @@ public abstract class MicrosoftAuthScreenMixin extends AuthScreen implements Aut
 	public void hotjoin$authResponse(Consumer<String> authConsumer) {
 		authResponse = authConsumer;
 	}
+
+	@Override
+	public Consumer<String> hotjoin$authResponse() {
+		return authResponse;
+	}
 }

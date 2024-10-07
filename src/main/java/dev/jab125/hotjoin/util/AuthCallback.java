@@ -4,4 +4,6 @@ import java.util.function.Consumer;
 
 public interface AuthCallback {
 	void hotjoin$authResponse(Consumer<String> authConsumer);
+
+	Consumer<String> hotjoin$authResponse();
 }

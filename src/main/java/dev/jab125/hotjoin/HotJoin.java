@@ -74,7 +74,7 @@ public class HotJoin {
 		} else {
 			authMeCompat = null;
 		}
-		if (FabricLoader.getInstance().isModLoaded("legacy4j")) {
+		if (FabricLoader.getInstance().isModLoaded("legacy")) {
 			legacy4JModCompat = new Legacy4JModCompat();
 		} else {
 			legacy4JModCompat = null;
@@ -83,6 +83,10 @@ public class HotJoin {
 			var command = ClientCommandManager.literal("hotjoin");
 			if (FabricLoader.getInstance().isModLoaded("authme")) {
 				command.then(ClientCommandManager.literal("authme").then(ClientCommandManager.literal("microsoft").executes(authMeCompat::hotJoinAuthMeMicrosoft)));
+			}
+
+			if (FabricLoader.getInstance().isModLoaded("legacy")) {
+				command.then(ClientCommandManager.literal("legacy4j").executes(legacy4JModCompat::hotJoinLegacy4J));
 			}
 
 			if (FabricLoader.getInstance().isDevelopmentEnvironment()) {

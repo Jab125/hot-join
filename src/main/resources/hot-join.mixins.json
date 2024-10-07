@@ -1,12 +1,18 @@
 {
   "required": true,
   "package": "dev.jab125.hotjoin.mixin",
+  "plugin": "dev.jab125.hotjoin.HotJoinMixinPlugin",
   "compatibilityLevel": "JAVA_21",
   "injectors": {
     "defaultRequire": 1
   },
   "client": [
     "UserAccessor",
-    "authme.MicrosoftAuthScreenMixin"
+    "authme.MicrosoftAuthScreenMixin",
+    "legacy4j.ChooseUserScreenMixin",
+    "legacy4j.RealmsAvailabilityMixin"
+  ],
+  "mixins": [
+    "legacy4j.MCAccountMixin"
   ]
 }
