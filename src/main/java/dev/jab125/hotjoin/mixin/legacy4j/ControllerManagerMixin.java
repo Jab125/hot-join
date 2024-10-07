@@ -47,7 +47,7 @@ public class ControllerManagerMixin {
 					gamepadState.free();
 					if (GLFW.glfwGetGamepadState(i, gamepadState)) {
 						//manager.updateBindings();
-						if (gamepadState.buttons(ControllerManager.getHandler().getBindingIndex(ControllerBinding.GUIDE)) == 1) {
+						if (gamepadState.buttons(ControllerManager.getHandler().getBindingIndex(ControllerBinding.START)) == 1) {
 							if (Minecraft.getInstance().level != null && Minecraft.getInstance().getSingleplayerServer() != null && Minecraft.getInstance().screen == null) {
 								// we are in a world, and we own it, and there is no screen open.
 								int finalI = i;
