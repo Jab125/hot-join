@@ -24,11 +24,15 @@ public class ControllerManagerMixin {
 	@Shadow @Final private ControllerManager this$0;
 	@Inject(method = "run", at = @At("HEAD"), remap = false)
 	void interceptRun(CallbackInfo ci) {
+		if (!(Minecraft.getInstance().level != null && Minecraft.getInstance().getSingleplayerServer() != null && Minecraft.getInstance().screen == null)) return;
 		Controller.Handler handler = ControllerManager.getHandler();
 		// this goes from 0 to 15
 		//handler.getController()
 		for (int i = 0; i < 16; i++) {
 			if (Minecraft.getInstance().isRunning() && ControllerManager.getHandler().update()) {
+				if (i == ScreenUtil.getLegacyOptions().selectedControllerHandler().get()) continue;
+				int finalI1 = i;
+				if (Legacy4JModCompat.uuidLegacy4JMap.values().stream().map(Legacy4JData::controllerIndex).anyMatch(j -> j.equals(finalI1))) continue;
 				if (handler.isValidController(i)) {
 					// TODO: how expensive is this
 					Controller controller = handler.getController(i);
@@ -43,7 +47,7 @@ public class ControllerManagerMixin {
 							if (Minecraft.getInstance().level != null && Minecraft.getInstance().getSingleplayerServer() != null && Minecraft.getInstance().screen == null) {
 								// we are in a world, and we own it, and there is no screen open.
 								int finalI = i;
-								Minecraft.getInstance().tell(() -> Legacy4JModCompat.openLegacy4JUserPicker(new Legacy4JData(controller.getName(), finalI, ControllerManager.getHandler().getId())));
+								Minecraft.getInstance().tell(() -> Legacy4JModCompat.openLegacy4JUserPicker(new Legacy4JData(controller.getName(), finalI,ScreenUtil.getLegacyOptions().selectedControllerHandler().get())));
 							}
 							//System.out.println(controller.getName() + " is holding down the guide button!");
 						}

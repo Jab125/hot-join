@@ -40,6 +40,7 @@ import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.server.level.ServerPlayer;
 import org.apache.commons.lang3.ArrayUtils;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -128,8 +129,9 @@ public class HotJoin {
 				UUID key = first.get().getKey();
 				INSTANCES.remove(key);
 				uuidPlayerMap.remove(key);
+				if (legacy4JModCompat != null) legacy4JModCompat.leftWorld(key);
+				arrangeWindows();
 			}
-			arrangeWindows();
 		});
 
 
@@ -141,6 +143,8 @@ public class HotJoin {
 		String magic = System.getProperty("hotjoin.magic", "");
 		String compatString = System.getProperty("hotjoin.compat", "authme");
 		IModCompat compat = "authme".equals(compatString) ? authMeCompat : "legacy4j".equals(compatString) ? legacy4JModCompat : null;
+		String legacy4jData = System.getProperty("hotjoin.legacy4jData", "");
+		if (!legacy4jData.isEmpty()) legacy4JModCompat.sendLegacy4jData(legacy4jData);
 
 		if (hotjoinClient) {
 			ScreenEvents.AFTER_INIT.register((client, screen, scaledWidth, scaledHeight) -> {
@@ -149,6 +153,7 @@ public class HotJoin {
 					else {
 						if (firstTime[1]) {
 							firstTime[1] = false;
+							if (!legacy4jData.isEmpty()) legacy4JModCompat.joinedWorld();
 							if (!magic.isEmpty()) compat.setSession(HotJoinCodecs.USER_CODEC.decode(NbtOps.INSTANCE, crashgoByeBye(() ->NbtIo.read(ByteStreams.newDataInput(Base64.getDecoder().decode(magic.replace("$", "=")))))).resultOrPartial(LOGGER::error).orElseThrow().getFirst());
 						}
 						this.join(new ServerData("A Minecraftc nk∆∆i¶•†¥", hotjoinServer, ServerData.Type.LAN));
@@ -315,12 +320,12 @@ public class HotJoin {
 	}
 
 	@FunctionalInterface
-	interface SupplierButBetter<T, R extends Throwable> {
+	public interface SupplierButBetter<T, R extends Throwable> {
 		T get() throws R;
 	}
 
 	@SuppressWarnings({"RedundantCast", "unchecked"})
-	private <T, R extends Throwable> T crashgoByeBye(SupplierButBetter<T, R> t) {
+	public static  <T, R extends Throwable> T crashgoByeBye(SupplierButBetter<T, R> t) {
 		return ((SupplierButBetter<T, RuntimeException>) t).get();
 	}
 
@@ -334,7 +339,7 @@ public class HotJoin {
 
 	private int hotJoin(CommandContext<FabricClientCommandSource> a) {
 		try {
-			launchMinecraftClient(null, null);
+			launchMinecraftClient(null, null, null);
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
@@ -342,8 +347,9 @@ public class HotJoin {
 	}
 
 	// The goal is to launch Minecraft a second time, under a different directory.
-	public static void launchMinecraftClient(String compat, String magic) throws IOException {
+	public static UUID launchMinecraftClient(String compat, String magic, String legacy4jData) throws IOException {
 		if (magic != null) magic = magic.replace("=", "$");
+		if (legacy4jData != null) legacy4jData = legacy4jData.replace("=", "$");
 		UUID uuid = UUID.randomUUID();
 		INSTANCES.add(uuid);
 		IntegratedServer singleplayerServer = Minecraft.getInstance().getSingleplayerServer();
@@ -385,10 +391,12 @@ public class HotJoin {
 		if (compat != null) l = ArrayUtils.addAll(l, "-Dhotjoin.compat=" + compat);
 		if (FabricLoader.getInstance().isDevelopmentEnvironment()) l = ArrayUtils.addAll(l, "-Dfabric.development=true");
 		if (magic != null) l = ArrayUtils.addAll(l, "-Dhotjoin.magic=" + magic);
+		if (legacy4jData != null) l = ArrayUtils.addAll(l, "-Dhotjoin.legacy4jData=" + legacy4jData);
 		l = ArrayUtils.addAll(l, "-cp", cp, "net.fabricmc.loader.impl.launch.knot.KnotClient");
 		l = ArrayUtils.addAll(l, launchArguments);
 		ProcessBuilder exec = new ProcessBuilder().directory(path.toFile()).command(l).redirectOutput(ProcessBuilder.Redirect.INHERIT)
 				.redirectError(ProcessBuilder.Redirect.INHERIT);
 		exec.start();
+		return uuid;
 	}
 }
