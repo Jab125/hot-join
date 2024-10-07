@@ -22,6 +22,9 @@
 			"dev.jab125.hotjoin.HotJoinDataGenerator"
 		]
 	},
+	"languageAdapters": {
+		"hotjoin-very-early": "dev.jab125.hotjoin.HotJoinVeryEarly"
+	},
 	"mixins": [
 		"hot-join.mixins.json"
 	],
@@ -33,6 +36,17 @@
 		"concentration": "*"
 	},
 	"breaks": {
-		"connector": "*"
+		"connector": "*",
+		"legacy": "<1.7.4",
+		"authme": "<8.0.0"
+	},
+	"custom": {
+		"hotjoin-data": {
+			"at-least-one-available": {
+				"?development": "*",
+				"legacy": ">=1.7.4",
+				"authme": ">=8.0.0"
+			}
+		}
 	}
 }
