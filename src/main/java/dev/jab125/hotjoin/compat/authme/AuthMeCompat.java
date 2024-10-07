@@ -9,18 +9,13 @@ import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.User;
 
-import java.util.function.Supplier;
-
 public class AuthMeCompat implements IAuthMeModCompat {
 	@Override
 	public int hotJoinAuthMeMicrosoft(CommandContext<FabricClientCommandSource> a) {
 		a.getSource().getClient().tell(() -> {
-			Supplier<Supplier<Runnable>> sp = () -> () -> () -> {
-				MicrosoftAuthScreen microsoftAuthScreen = new MicrosoftAuthScreen(Minecraft.getInstance().screen, null, true);
-				((AuthCallback) microsoftAuthScreen).hotjoin$authResponse(AuthMeCompat::launchAuthMeClient);
-				Minecraft.getInstance().setScreen(microsoftAuthScreen);
-			};
-			sp.get().get().run();
+			MicrosoftAuthScreen microsoftAuthScreen = new MicrosoftAuthScreen(Minecraft.getInstance().screen, null, true);
+			((AuthCallback) microsoftAuthScreen).hotjoin$authResponse(AuthMeCompat::launchAuthMeClient);
+			Minecraft.getInstance().setScreen(microsoftAuthScreen);
 		});
 		return 0;
 	}
