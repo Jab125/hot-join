@@ -66,15 +66,21 @@ public class Legacy4JModCompat implements ILegacy4JModCompat {
 
 	@SuppressWarnings("unchecked")
 	private static <T extends Throwable> void launchLegacy4jClient(String magic, Legacy4JData legacy4JData) throws T {
-		Tag tag = Legacy4JData.CODEC.encodeStart(NbtOps.INSTANCE, legacy4JData).resultOrPartial(HotJoin.LOGGER::error).orElseThrow();
-		ByteArrayDataOutput byteArrayDataOutput = ByteStreams.newDataOutput();
-		try {
-			NbtIo.write((CompoundTag) tag, byteArrayDataOutput);
-		} catch (IOException e) {
-			throw (T) e;
+		String data;
+		if (legacy4JData != null) {
+			Tag tag = Legacy4JData.CODEC.encodeStart(NbtOps.INSTANCE, legacy4JData).resultOrPartial(HotJoin.LOGGER::error).orElseThrow();
+			ByteArrayDataOutput byteArrayDataOutput = ByteStreams.newDataOutput();
+			try {
+				NbtIo.write((CompoundTag) tag, byteArrayDataOutput);
+			} catch (IOException e) {
+				throw (T) e;
+			}
+			data = Base64.getEncoder().encodeToString(byteArrayDataOutput.toByteArray());
+		} else {
+			data = null;
 		}
-		UUID uuid = HotJoinAccess.launchMinecraftClient("legacy4j", magic, Base64.getEncoder().encodeToString(byteArrayDataOutput.toByteArray()));
-		uuidLegacy4JMap.put(uuid, legacy4JData);
+		UUID uuid = HotJoinAccess.launchMinecraftClient("legacy4j", magic, data);
+		if (legacy4JData != null) uuidLegacy4JMap.put(uuid, legacy4JData);
 	}
 
 	@Override
