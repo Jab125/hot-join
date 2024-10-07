@@ -43,6 +43,7 @@ dependencies {
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 	modImplementation "maven.modrinth:concentration:MXVGS9Kc" // 2.0.1-fabric for 1.21.1
 	modImplementation "maven.modrinth:auth-me:8.0.0+1.21"
+	modImplementation "maven.modrinth:legacy4j:1.21-1.7.4+fabric"
 }
 
 processResources {
