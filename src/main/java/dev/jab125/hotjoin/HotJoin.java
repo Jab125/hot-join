@@ -358,7 +358,7 @@ public class HotJoin {
 		return new Wrapped() {
 			@Override
 			public int getId() {
-				return INSTANCES.indexOf(player);
+				return INSTANCES.indexOf(player) + 1;
 			}
 			private void send(int a, int b) {
 				ServerPlayNetworking.send(serverPlayer, new SteamPayload(a, b));
