@@ -13,6 +13,7 @@
     "legacy4j.RealmsAvailabilityMixin"
   ],
   "mixins": [
+    "legacy4j.ControllerManagerMixin",
     "legacy4j.MCAccountMixin"
   ]
 }
