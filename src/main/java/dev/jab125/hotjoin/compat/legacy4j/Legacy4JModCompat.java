@@ -21,8 +21,10 @@ public class Legacy4JModCompat implements ILegacy4JModCompat {
 	public Legacy4JModCompat() {
 		ScreenEvents.AFTER_INIT.register((client, screen, scaledWidth, scaledHeight) -> {
 			ScreenEvents.afterRender(screen).register((screen1, graphics, mouseX, mouseY, tickDelta) -> {
-				if (screen instanceof ChooseUserScreen sc) {
-					graphics.drawCenteredString(client.font, "Joining with [CONTROLLER NAME]", screen.width / 2, 15, 0xffffffff);
+				if (screen instanceof ChooseUserScreen sc && sc instanceof AuthCallback c) {
+					if (c.hotjoin$legacy4jData() instanceof Legacy4JData data) {
+						graphics.drawCenteredString(client.font, "Joining with " + data.controllerName(), screen.width / 2, 15, 0xffffffff);
+					}
 				}
 			});
 		});
@@ -34,13 +36,19 @@ public class Legacy4JModCompat implements ILegacy4JModCompat {
 	}
 
 	public static void openLegacy4JUserPicker() {
+		openLegacy4JUserPicker(null);
+	}
+
+	public static void openLegacy4JUserPicker(Legacy4JData data) {
 		ChooseUserScreen chooseUserScreen = new ChooseUserScreen(null);
 		((AuthCallback)chooseUserScreen).hotjoin$authResponse(s -> {
 			Minecraft.getInstance().getToasts().addToast(new LegacyTip(Component.literal("Success, joining world...")));
 			launchLegacy4jClient(s);
 		});
+		((AuthCallback) chooseUserScreen).hotjoin$legacy4jData(data);
 		Minecraft.getInstance().setScreen(chooseUserScreen);
 	}
+
 	private static void launchLegacy4jClient(String magic) {
 		HotJoinAccess.launchMinecraftClient("legacy4j", magic);
 	}

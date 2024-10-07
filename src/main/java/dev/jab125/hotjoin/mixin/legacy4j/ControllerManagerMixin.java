@@ -1,5 +1,6 @@
 package dev.jab125.hotjoin.mixin.legacy4j;
 
+import dev.jab125.hotjoin.compat.legacy4j.Legacy4JData;
 import dev.jab125.hotjoin.compat.legacy4j.Legacy4JModCompat;
 import net.minecraft.client.Minecraft;
 import org.lwjgl.glfw.GLFW;
@@ -21,7 +22,6 @@ import wily.legacy.util.ScreenUtil;
 @Mixin(targets = "wily/legacy/client/controller/ControllerManager$1")
 public class ControllerManagerMixin {
 	@Shadow @Final private ControllerManager this$0;
-	private boolean already;
 	@Inject(method = "run", at = @At("HEAD"), remap = false)
 	void interceptRun(CallbackInfo ci) {
 		Controller.Handler handler = ControllerManager.getHandler();
@@ -31,7 +31,7 @@ public class ControllerManagerMixin {
 			if (Minecraft.getInstance().isRunning() && ControllerManager.getHandler().update()) {
 				if (handler.isValidController(i)) {
 					// TODO: how expensive is this
-					//Controller controller = handler.getController(i);
+					Controller controller = handler.getController(i);
 					//System.out.println(i + " is a valid controller, " + controller.getName());
 					//controller.connect(Legacy4JClient.controllerManager);
 
@@ -42,7 +42,8 @@ public class ControllerManagerMixin {
 						if (gamepadState.buttons(ControllerManager.getHandler().getBindingIndex(ControllerBinding.GUIDE)) == 1) {
 							if (Minecraft.getInstance().level != null && Minecraft.getInstance().getSingleplayerServer() != null && Minecraft.getInstance().screen == null) {
 								// we are in a world, and we own it, and there is no screen open.
-								Minecraft.getInstance().tell(Legacy4JModCompat::openLegacy4JUserPicker);
+								int finalI = i;
+								Minecraft.getInstance().tell(() -> Legacy4JModCompat.openLegacy4JUserPicker(new Legacy4JData(controller.getName(), finalI, ControllerManager.getHandler().getId())));
 							}
 							//System.out.println(controller.getName() + " is holding down the guide button!");
 						}

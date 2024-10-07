@@ -347,6 +347,7 @@ public class HotJoin {
 		UUID uuid = UUID.randomUUID();
 		INSTANCES.add(uuid);
 		IntegratedServer singleplayerServer = Minecraft.getInstance().getSingleplayerServer();
+		assert singleplayerServer != null;
 		singleplayerServer.publishServer(singleplayerServer.getDefaultGameType(), singleplayerServer.getPlayerList().isAllowCommandsForAllPlayers(), 3600);
 		String[] launchArguments = FabricLoader.getInstance().getLaunchArguments(false);
 		int i = 0;
