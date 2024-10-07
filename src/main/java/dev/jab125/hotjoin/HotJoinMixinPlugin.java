@@ -23,6 +23,12 @@ public class HotJoinMixinPlugin implements IMixinConfigPlugin {
 
 	@Override
 	public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {
+		if (mixinClassName.contains("legacy4j")) {
+			return FabricLoader.getInstance().isModLoaded("legacy");
+		}
+		if (mixinClassName.contains("authme")) {
+			return FabricLoader.getInstance().isModLoaded("authme");
+		}
 		return true;
 	}
 
