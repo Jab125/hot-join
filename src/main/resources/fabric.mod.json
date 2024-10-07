@@ -31,5 +31,8 @@
 		"java": ">=21",
 		"fabric-api": "*",
 		"concentration": "*"
+	},
+	"breaks": {
+		"connector": "*"
 	}
 }
