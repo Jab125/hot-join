@@ -2,9 +2,7 @@ package dev.jab125.hotjoin.compat.legacy4j;
 
 import com.mojang.brigadier.context.CommandContext;
 import dev.jab125.hotjoin.api.HotJoinAccess;
-import dev.jab125.hotjoin.compat.authme.AuthMeCompat;
 import dev.jab125.hotjoin.util.AuthCallback;
-import me.axieum.mcmod.authme.impl.gui.MicrosoftAuthScreen;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.User;
