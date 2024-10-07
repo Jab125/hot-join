@@ -41,6 +41,7 @@ public class ControllerManagerMixin {
 
 					// oh noe
 					GLFWGamepadState gamepadState = GLFWGamepadState.calloc();
+					gamepadState.free();
 					if (GLFW.glfwGetGamepadState(i, gamepadState)) {
 						//manager.updateBindings();
 						if (gamepadState.buttons(ControllerManager.getHandler().getBindingIndex(ControllerBinding.GUIDE)) == 1) {
@@ -56,7 +57,7 @@ public class ControllerManagerMixin {
 						}
 					}
 					// this _should_ be safe, right?
-					gamepadState.free();
+
 				}
 			}
 		}
