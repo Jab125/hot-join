@@ -107,6 +107,6 @@ public class Legacy4JModCompat implements ILegacy4JModCompat {
 
 	@Override
 	public void leftWorld(UUID uuid) {
-
+		uuidLegacy4JMap.remove(uuid);
 	}
 }
