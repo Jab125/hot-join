@@ -34,7 +34,7 @@ public interface MCAccountMixin {
 	@Inject(method = "lambda$login$0", at = @At(value = "INVOKE", target = "Lwily/legacy/client/screen/ChooseUserScreen;reloadAccountButtons()V", shift = At.Shift.AFTER), cancellable = true)
 	private static void interceptLambda(ChooseUserScreen screen, CallbackInfo ci) {
 		if (((AuthCallback)screen).hotjoin$authResponse() != null) ci.cancel();
-		Minecraft.getInstance().setScreen(screen.parent);
+		Minecraft.getInstance().setScreen(null);
 	}
 
 	@Inject(method = "setUser", at = @At("HEAD"), cancellable = true)
