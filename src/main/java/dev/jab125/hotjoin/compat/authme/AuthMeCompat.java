@@ -1,6 +1,7 @@
 package dev.jab125.hotjoin.compat.authme;
 
 import com.mojang.brigadier.context.CommandContext;
+import dev.jab125.hotjoin.HotJoin;
 import dev.jab125.hotjoin.api.HotJoinAccess;
 import dev.jab125.hotjoin.util.AuthCallback;
 import me.axieum.mcmod.authme.api.util.SessionUtils;
@@ -12,6 +13,7 @@ import net.minecraft.client.User;
 public class AuthMeCompat implements IAuthMeModCompat {
 	@Override
 	public int hotJoinAuthMeMicrosoft(CommandContext<FabricClientCommandSource> a) {
+		HotJoin.canLaunchOtherwiseThrow();
 		a.getSource().getClient().tell(() -> {
 			MicrosoftAuthScreen microsoftAuthScreen = new MicrosoftAuthScreen(Minecraft.getInstance().screen, null, true);
 			((AuthCallback) microsoftAuthScreen).hotjoin$authResponse(AuthMeCompat::launchAuthMeClient);

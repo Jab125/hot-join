@@ -46,6 +46,7 @@ public class Legacy4JModCompat implements ILegacy4JModCompat {
 	}
 	@Override
 	public int hotJoinLegacy4J(CommandContext<FabricClientCommandSource> context) {
+		HotJoin.canLaunchOtherwiseThrow();
 		context.getSource().getClient().tell(Legacy4JModCompat::openLegacy4JUserPicker);
 		return 0;
 	}

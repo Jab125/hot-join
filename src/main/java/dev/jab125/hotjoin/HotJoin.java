@@ -66,6 +66,18 @@ public class HotJoin {
 
 	private Wrapped wrapped = null;
 	public static boolean hotjoinClient;
+
+	public static final int LIMIT = 2;
+	public static boolean canLaunchAnotherClient() {
+		int size = INSTANCES.size();
+		size++; // account for the original client
+		return size < LIMIT;
+	}
+
+	public static void canLaunchOtherwiseThrow() {
+		if (!HotJoin.canLaunchAnotherClient()) throw new HotJoinPlayerLimitException("You have reached the max limit of " + HotJoin.LIMIT + " splitscreen instances!");
+	}
+
 	public void onInitialize() {
 		// This code runs as soon as Minecraft is in a mod-load-ready state.
 		// However, some things (like resources) may still be uninitialized.
@@ -398,6 +410,7 @@ public class HotJoin {
 
 
 	private int hotJoin(CommandContext<FabricClientCommandSource> a) {
+		HotJoin.canLaunchOtherwiseThrow();
 		try {
 			launchMinecraftClient(null, null, null);
 		} catch (IOException e) {
@@ -408,6 +421,7 @@ public class HotJoin {
 
 	// The goal is to launch Minecraft a second time, under a different directory.
 	public static UUID launchMinecraftClient(String compat, String magic, String legacy4jData) throws IOException {
+		HotJoin.canLaunchOtherwiseThrow();
 		if (magic != null) magic = magic.replace("=", "$");
 		if (legacy4jData != null) legacy4jData = legacy4jData.replace("=", "$");
 		UUID uuid = UUID.randomUUID();

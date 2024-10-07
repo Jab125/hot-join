@@ -1,5 +1,6 @@
 package dev.jab125.hotjoin.mixin.legacy4j;
 
+import dev.jab125.hotjoin.HotJoin;
 import dev.jab125.hotjoin.compat.legacy4j.Legacy4JData;
 import dev.jab125.hotjoin.compat.legacy4j.Legacy4JModCompat;
 import net.minecraft.client.Minecraft;
@@ -24,6 +25,7 @@ public class ControllerManagerMixin {
 	@Shadow @Final private ControllerManager this$0;
 	@Inject(method = "run", at = @At("HEAD"), remap = false)
 	void interceptRun(CallbackInfo ci) {
+		if (!HotJoin.canLaunchAnotherClient()) return;
 		if (!(Minecraft.getInstance().level != null && Minecraft.getInstance().getSingleplayerServer() != null && Minecraft.getInstance().screen == null)) return;
 		Controller.Handler handler = ControllerManager.getHandler();
 		// this goes from 0 to 15
