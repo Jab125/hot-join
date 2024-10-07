@@ -40,6 +40,9 @@
 		"legacy": "<1.7.4",
 		"authme": "<8.0.0"
 	},
+	"recommends": {
+		"twinsession": ">=1.0.1"
+	},
 	"custom": {
 		"hotjoin-data": {
 			"at-least-one-available": {
