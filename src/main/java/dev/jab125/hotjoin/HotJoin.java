@@ -65,12 +65,12 @@ public class HotJoin {
 	public static ILegacy4JModCompat legacy4JModCompat;
 
 	private Wrapped wrapped = null;
-	byte[] bytes;
+	public static boolean hotjoinClient;
 	public void onInitialize() {
 		// This code runs as soon as Minecraft is in a mod-load-ready state.
 		// However, some things (like resources) may still be uninitialized.
 		// Proceed with mild caution.
-		boolean hotjoinClient = System.getProperty("hotjoin.client", "false").equals("true");
+		hotjoinClient = System.getProperty("hotjoin.client", "false").equals("true");
 
 		if (FabricLoader.getInstance().isModLoaded("authme")) {
 			authMeCompat = new AuthMeCompat();
