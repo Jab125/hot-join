@@ -39,6 +39,7 @@ import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundSource;
 import org.apache.commons.lang3.ArrayUtils;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -170,6 +171,7 @@ public class HotJoin {
 							firstTime[1] = false;
 							if (!legacy4jData.isEmpty()) legacy4JModCompat.joinedWorld();
 							if (!magic.isEmpty()) compat.setSession(HotJoinCodecs.USER_CODEC.decode(NbtOps.INSTANCE, crashgoByeBye(() ->NbtIo.read(ByteStreams.newDataInput(Base64.getDecoder().decode(magic.replace("$", "=")))))).resultOrPartial(LOGGER::error).orElseThrow().getFirst());
+							client.options.getSoundSourceOptionInstance(SoundSource.MUSIC).set(0d);
 						}
 						if (firstTime[2]) {
 							this.join(new ServerData("A Minecraftc nk∆∆i¶•†¥", hotjoinServer, ServerData.Type.LAN));
