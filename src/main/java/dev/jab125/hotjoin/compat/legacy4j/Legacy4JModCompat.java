@@ -5,6 +5,9 @@ import com.google.common.io.ByteStreams;
 import com.mojang.brigadier.context.CommandContext;
 import dev.jab125.hotjoin.HotJoin;
 import dev.jab125.hotjoin.api.HotJoinAccess;
+import dev.jab125.hotjoin.packet.AlohaPayload;
+import dev.jab125.hotjoin.packet.SdlNativesPayload;
+import dev.jab125.hotjoin.server.HotJoinS2CThread;
 import dev.jab125.hotjoin.util.AuthCallback;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
@@ -17,11 +20,14 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import wily.legacy.client.LegacyOptions;
 import wily.legacy.client.LegacyTip;
+import wily.legacy.client.controller.SDLControllerHandler;
 import wily.legacy.client.screen.ChooseUserScreen;
 import wily.legacy.util.MCAccount;
 import wily.legacy.util.ScreenUtil;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.UUID;
@@ -111,5 +117,19 @@ public class Legacy4JModCompat implements ILegacy4JModCompat {
 	@Override
 	public void leftWorld(UUID uuid) {
 		uuidLegacy4JMap.remove(uuid);
+	}
+
+	@Override
+	public void connectionEstablished(HotJoinS2CThread thread, AlohaPayload payload, UUID uuid) {
+		if (2 == ScreenUtil.getLegacyOptions().selectedControllerHandler().get()) {
+			File nativesFile = SDLControllerHandler.nativesFile;
+			thread.runTask(t -> t.send(new SdlNativesPayload(nativesFile.toPath().toAbsolutePath())));
+		}
+	}
+
+	@Override
+	public void receivedSdlNatives(SdlNativesPayload payload) {
+		Path path = payload.path();
+		SDLControllerHandler.nativesFile = path.toFile();
 	}
 }

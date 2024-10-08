@@ -2,10 +2,7 @@ package dev.jab125.hotjoin;
 
 import com.google.common.io.ByteStreams;
 import dev.jab125.hotjoin.compat.IModCompat;
-import dev.jab125.hotjoin.packet.AlohaPayload;
-import dev.jab125.hotjoin.packet.ClosingPayload;
-import dev.jab125.hotjoin.packet.SteamPayload;
-import dev.jab125.hotjoin.packet.WindowOpenedPayload;
+import dev.jab125.hotjoin.packet.*;
 import dev.jab125.hotjoin.server.HotJoinC2SThread;
 import dev.jab125.hotjoin.server.HotJoinClient;
 import dev.jab125.hotjoin.util.HotJoinCodecs;
@@ -45,6 +42,12 @@ public class HotJoinClientInit {
 						wrapped = null;
 					}
 				}
+			});
+		});
+
+		HotJoinClient.registerPacketHandler(SdlNativesPayload.TYPE, payload -> {
+			Minecraft.getInstance().execute(() -> {
+				legacy4JModCompat.receivedSdlNatives(payload);
 			});
 		});
 

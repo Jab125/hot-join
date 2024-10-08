@@ -66,6 +66,8 @@ public class HotJoinServerInit {
 			if (!INSTANCES.contains(thread.uuid)) {
 				thread.disconnect();
 				System.out.println("Disconnected.");
+			} else {
+				if (legacy4JModCompat != null) legacy4JModCompat.connectionEstablished(thread, payload, uuid);
 			}
 		});
 

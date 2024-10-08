@@ -1,9 +1,6 @@
 package dev.jab125.hotjoin.server;
 
-import dev.jab125.hotjoin.packet.AlohaPayload;
-import dev.jab125.hotjoin.packet.ClosingPayload;
-import dev.jab125.hotjoin.packet.SteamPayload;
-import dev.jab125.hotjoin.packet.WindowOpenedPayload;
+import dev.jab125.hotjoin.packet.*;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
@@ -23,6 +20,7 @@ public class HotJoinCommon {
 		PayloadRegistry.register(AlohaPayload.TYPE, AlohaPayload.STREAM_CODEC);
 		PayloadRegistry.register(ClosingPayload.TYPE, ClosingPayload.STREAM_CODEC);
 		PayloadRegistry.register(WindowOpenedPayload.TYPE, WindowOpenedPayload.STREAM_CODEC);
+		PayloadRegistry.register(SdlNativesPayload.TYPE, SdlNativesPayload.STREAM_CODEC);
 		initted = true;
 	}
 
