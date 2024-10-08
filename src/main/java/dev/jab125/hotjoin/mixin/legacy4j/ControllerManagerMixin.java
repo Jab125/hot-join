@@ -14,10 +14,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import wily.legacy.Legacy4J;
 import wily.legacy.Legacy4JClient;
-import wily.legacy.client.controller.BindingState;
-import wily.legacy.client.controller.Controller;
-import wily.legacy.client.controller.ControllerBinding;
-import wily.legacy.client.controller.ControllerManager;
+import wily.legacy.client.controller.*;
 import wily.legacy.util.ScreenUtil;
 
 @Mixin(targets = "wily/legacy/client/controller/ControllerManager$1")
@@ -41,13 +38,28 @@ public class ControllerManagerMixin {
 					//System.out.println(i + " is a valid controller, " + controller.getName());
 					//controller.connect(Legacy4JClient.controllerManager);
 
-					// oh noe
-					GLFWGamepadState gamepadState = GLFWGamepadState.calloc();
-					// this _should_ be safe, right?
-					if (GLFW.glfwGetGamepadState(i, gamepadState)) {
-						gamepadState.free();
-						//manager.updateBindings();
-						if (gamepadState.buttons(ControllerManager.getHandler().getBindingIndex(ControllerBinding.START)) == 1) {
+					if (handler instanceof GLFWControllerHandler handler2) {
+						GLFWGamepadState gamepadState = GLFWGamepadState.calloc();
+						// this _should_ be safe, right?
+						if (GLFW.glfwGetGamepadState(i, gamepadState)) {
+							gamepadState.free();
+							//manager.updateBindings();
+							if (gamepadState.buttons(ControllerManager.getHandler().getBindingIndex(ControllerBinding.START)) == 1) {
+								if (Minecraft.getInstance().level != null && Minecraft.getInstance().getSingleplayerServer() != null && Minecraft.getInstance().screen == null) {
+									// we are in a world, and we own it, and there is no screen open.
+									int finalI = i;
+									Minecraft.getInstance().tell(() -> {
+										if (Minecraft.getInstance().screen != null) return;
+										Legacy4JModCompat.openLegacy4JUserPicker(new Legacy4JData(controller.getName(), finalI,ScreenUtil.getLegacyOptions().selectedControllerHandler().get()));
+									});
+								}
+								//System.out.println(controller.getName() + " is holding down the guide button!");
+							}
+						} else {
+							gamepadState.free();
+						}
+					} else if (handler instanceof SDLControllerHandler handler1) {
+						if (controller.buttonPressed(ControllerManager.getHandler().getBindingIndex(ControllerBinding.START))) {
 							if (Minecraft.getInstance().level != null && Minecraft.getInstance().getSingleplayerServer() != null && Minecraft.getInstance().screen == null) {
 								// we are in a world, and we own it, and there is no screen open.
 								int finalI = i;
@@ -56,10 +68,7 @@ public class ControllerManagerMixin {
 									Legacy4JModCompat.openLegacy4JUserPicker(new Legacy4JData(controller.getName(), finalI,ScreenUtil.getLegacyOptions().selectedControllerHandler().get()));
 								});
 							}
-							//System.out.println(controller.getName() + " is holding down the guide button!");
 						}
-					} else {
-						gamepadState.free();
 					}
 				}
 			}
