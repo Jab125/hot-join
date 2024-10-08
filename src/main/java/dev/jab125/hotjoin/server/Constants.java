@@ -1,6 +1,9 @@
 package dev.jab125.hotjoin.server;
 
 public class Constants {
+	/*
+	 * For anyone taking "inspiration", change the numbers.
+	 */
 	public static final byte[] MAGIC_START = new byte[]{
 			100,
 			101,
