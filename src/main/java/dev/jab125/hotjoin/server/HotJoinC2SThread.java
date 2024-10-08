@@ -21,7 +21,6 @@ public class HotJoinC2SThread extends Thread {
 			new Thread(() -> {
 				while (true) {
 					for (Consumer<HotJoinC2SThread> runnable : runnables) {
-						System.out.println("CLIENT: ran a task");
 						runnable.accept(this);
 						runnables.remove(runnable);
 					}
