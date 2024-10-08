@@ -51,7 +51,6 @@ public class HotJoinClient {
 		client.startConnection("127.0.0.1", 4444);
 		int i = 0;
 		FriendlyByteBuf bup = null;
-		client.send(SteamPayload.TYPE, new SteamPayload(1337, 1337));
 		while (true) {
 			byte read = (byte) client.in.read();
 			if (read == -1) break;
