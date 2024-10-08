@@ -62,6 +62,7 @@ public class HotJoinClientInit {
 		String legacy4jData = System.getProperty("hotjoin.legacy4jData", "");
 		if (!legacy4jData.isEmpty()) legacy4JModCompat.sendLegacy4jData(legacy4jData);
 
+
 		ScreenEvents.AFTER_INIT.register((client, screen, scaledWidth, scaledHeight) -> {
 			if (screen instanceof TitleScreen || screen instanceof AccessibilityOnboardingScreen) {
 				if (firstTime[0]) firstTime[0] = false;
@@ -85,8 +86,7 @@ public class HotJoinClientInit {
 				}
 			}
 		});
-		hotJoinC2SThread.runTask(v -> v.send(new AlohaPayload(hotjoinUUID)));
-		hotJoinC2SThread.runTask(v -> v.send(new AlohaPayload(hotjoinUUID)));
+
 		hotJoinC2SThread.runTask(v -> v.send(new AlohaPayload(hotjoinUUID)));
 
 //		ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
@@ -97,7 +97,12 @@ public class HotJoinClientInit {
 		});
 
 		ClientLifecycleEvents.CLIENT_STARTED.register(a -> {
-			hotJoinC2SThread.runTask(v -> v.send(new WindowOpenedPayload()));
+			new Thread(() -> {
+				long l = System.currentTimeMillis();
+				//noinspection StatementWithEmptyBody
+				while (System.currentTimeMillis() - l < 500);
+				hotJoinC2SThread.runTask(v -> v.send(new WindowOpenedPayload()));
+			}).start();
 		});
 
 		ClientLifecycleEvents.CLIENT_STOPPING.register(a -> {

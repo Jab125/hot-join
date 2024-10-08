@@ -59,8 +59,9 @@ public class HotJoinServerInit {
 
 		HotJoinServer.registerPacketHandler(AlohaPayload.TYPE, (thread, payload, uuid) -> {
 			// UUID is null at the moment, we set it here
+			System.out.println("ALOHA!");
 			thread.uuid = payload.uuid();
-			uuidPlayerMap.put(uuid, thread);
+			uuidPlayerMap.put(thread.uuid, thread);
 			// Malicious connection?
 			if (!INSTANCES.contains(thread.uuid)) {
 				thread.disconnect();
@@ -69,6 +70,7 @@ public class HotJoinServerInit {
 		});
 
 		HotJoinServer.registerPacketHandler(WindowOpenedPayload.TYPE, (thread, payload, uuid) -> {
+			System.out.println("Windows opened.");
 			arrangeWindows();
 		});
 

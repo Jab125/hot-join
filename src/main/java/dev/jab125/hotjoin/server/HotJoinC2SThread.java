@@ -18,14 +18,6 @@ public class HotJoinC2SThread extends Thread {
 	@Override
 	public void run() {
 		try {
-			new Thread(() -> {
-				while (true) {
-					for (Consumer<HotJoinC2SThread> runnable : runnables) {
-						runnable.accept(this);
-						runnables.remove(runnable);
-					}
-				}
-			}).start();
 			run0();
 		} catch (Throwable e) {
 			e.printStackTrace();
@@ -39,6 +31,14 @@ public class HotJoinC2SThread extends Thread {
 		client = new HotJoinClient();
 		System.out.println("Started");
 		client.startConnection("127.0.0.1", 4444);
+		new Thread(() -> {
+			while (true) {
+				for (Consumer<HotJoinC2SThread> runnable : runnables) {
+					runnable.accept(this);
+					runnables.remove(runnable);
+				}
+			}
+		}).start();
 		int i = 0;
 		FriendlyByteBuf bup = null;
 		while (true) {

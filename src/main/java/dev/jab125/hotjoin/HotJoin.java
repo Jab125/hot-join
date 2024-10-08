@@ -112,8 +112,11 @@ public class HotJoin {
 		for (UUID instance : INSTANCES) {
 			if (uuidPlayerMap.containsKey(instance)) {
 				wrappeds.add(wrap(instance));
+			} else {
+				System.out.println("We don't have " + instance + "!");
 			}
 		}
+		System.out.println("There are " + wrappeds.size() + " instances");
 		// get monitor width and height
 		Monitor bestMonitor = ((WindowAccessor) (Object) Minecraft.getInstance().getWindow()).getScreenManager().findBestMonitor(Minecraft.getInstance().getWindow());
 		assert bestMonitor != null;
