@@ -1,1 +1,4 @@
-- Initial release on Modrinth
+- Networking has been completely reworked
+- Windows should resize earlier.
+- (Legacy4J) Settings should now be configured when using `/hotjoin legacy4j`
+- (Legacy4J) SDL controller handler is now supported.
