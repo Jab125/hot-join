@@ -33,7 +33,7 @@ public class HotJoinServerClientThread extends Thread {
 		FriendlyByteBuf bup = null;
 		while (true) {
 			for (Consumer<HotJoinServerClientThread> runnable : runnables) {
-				System.out.println("ran a task");
+				//System.out.println("ran a task");
 				runnable.accept(this);
 				runnables.remove(runnable);
 			}
