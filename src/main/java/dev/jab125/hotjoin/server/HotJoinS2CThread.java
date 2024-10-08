@@ -42,7 +42,6 @@ public class HotJoinS2CThread extends Thread {
 			while (true) {
 				if (this.shouldDisconnect) return;
 				for (Consumer<HotJoinS2CThread> runnable : runnables) {
-					System.out.println("SERVER: ran a task");
 					runnable.accept(this);
 					runnables.remove(runnable);
 				}
@@ -97,7 +96,6 @@ public class HotJoinS2CThread extends Thread {
 					Object decode = value.decode(bup);
 					// noinspection unchecked
 					((TriConsumer) handlers.get(typeStreamCodecEntry.getKey())).accept(this, decode, uuid);
-					System.out.println(decode);
 					bup = null;
 					i = 0;
 				}
