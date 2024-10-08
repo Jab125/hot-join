@@ -44,8 +44,8 @@ public class ControllerManagerMixin {
 					// oh noe
 					GLFWGamepadState gamepadState = GLFWGamepadState.calloc();
 					// this _should_ be safe, right?
-					gamepadState.free();
 					if (GLFW.glfwGetGamepadState(i, gamepadState)) {
+						gamepadState.free();
 						//manager.updateBindings();
 						if (gamepadState.buttons(ControllerManager.getHandler().getBindingIndex(ControllerBinding.START)) == 1) {
 							if (Minecraft.getInstance().level != null && Minecraft.getInstance().getSingleplayerServer() != null && Minecraft.getInstance().screen == null) {
@@ -58,6 +58,8 @@ public class ControllerManagerMixin {
 							}
 							//System.out.println(controller.getName() + " is holding down the guide button!");
 						}
+					} else {
+						gamepadState.free();
 					}
 				}
 			}
