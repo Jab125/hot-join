@@ -69,7 +69,7 @@ public class HotJoin {
 	private Wrapped wrapped = null;
 	public static boolean hotjoinClient;
 
-	public static final int LIMIT = 4;
+	public static final int LIMIT = 2;
 	public static boolean canLaunchAnotherClient() {
 		int size = INSTANCES.size();
 		size++; // account for the original client
