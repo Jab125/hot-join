@@ -76,6 +76,8 @@ public class HotJoinServerInit {
 
 		HotJoinServer.registerPacketHandler(ClosingPayload.TYPE, (thread, payload, uuid) -> {
 			INSTANCES.remove(uuid);
+			uuidPlayerMap.remove(uuid);
+			if (legacy4JModCompat != null) legacy4JModCompat.leftWorld(uuid);
 			arrangeWindows();
 		});
 
