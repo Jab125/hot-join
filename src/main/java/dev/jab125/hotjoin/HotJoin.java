@@ -122,8 +122,8 @@ public class HotJoin {
 		// get monitor width and height
 		Monitor bestMonitor = ((WindowAccessor) (Object) Minecraft.getInstance().getWindow()).getScreenManager().findBestMonitor(Minecraft.getInstance().getWindow());
 		assert bestMonitor != null;
-		int width = bestMonitor.getMode(0).getWidth();
-		int height = bestMonitor.getMode(0).getHeight();
+		int width = bestMonitor.getCurrentMode().getWidth();
+		int height = bestMonitor.getCurrentMode().getHeight();
 
 		if (wrappeds.size() == 1) {
 			Wrapped wrapped = wrappeds.get(0);
