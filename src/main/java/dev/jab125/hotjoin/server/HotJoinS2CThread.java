@@ -1,25 +1,34 @@
 package dev.jab125.hotjoin.server;
 
+import dev.jab125.hotjoin.HotJoin;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
+import org.apache.commons.lang3.function.TriConsumer;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.Socket;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-public class HotJoinServerClientThread extends Thread {
+import static dev.jab125.hotjoin.server.HotJoinServer.handlers;
+
+public class HotJoinS2CThread extends Thread {
 
 	private final InputStream inputStream;
 	protected Socket socket;
-	CopyOnWriteArrayList<Consumer<HotJoinServerClientThread>> runnables = new CopyOnWriteArrayList<>();
+	// UUID of the connected player, set via Aloha packet
+	public UUID uuid;
+	CopyOnWriteArrayList<Consumer<HotJoinS2CThread>> runnables = new CopyOnWriteArrayList<>();
+	private boolean shouldDisconnect = false;
 
-	public HotJoinServerClientThread(Socket socket) {
+	public HotJoinS2CThread(Socket socket) {
 		this.socket = socket;
 		try {
 			inputStream = socket.getInputStream();
@@ -29,10 +38,28 @@ public class HotJoinServerClientThread extends Thread {
 	}
 	@Override
 	public void run() {
+		new Thread(() -> {
+			while (true) {
+				if (this.shouldDisconnect) return;
+				for (Consumer<HotJoinS2CThread> runnable : runnables) {
+					System.out.println("SERVER: ran a task");
+					runnable.accept(this);
+					runnables.remove(runnable);
+				}
+			}
+		}).start();
 		int i = 0;
 		FriendlyByteBuf bup = null;
 		while (true) {
-			for (Consumer<HotJoinServerClientThread> runnable : runnables) {
+			if (this.shouldDisconnect) {
+				try {
+					socket.close();
+				} catch (IOException e) {
+					HotJoin.LOGGER.error("Failed to stop thread!", e);
+					//throw new RuntimeException(e);
+				}
+			}
+			for (Consumer<HotJoinS2CThread> runnable : runnables) {
 				//System.out.println("ran a task");
 				runnable.accept(this);
 				runnables.remove(runnable);
@@ -68,6 +95,8 @@ public class HotJoinServerClientThread extends Thread {
 					Map.Entry<CustomPacketPayload.Type<?>, StreamCodec<FriendlyByteBuf, ?>> typeStreamCodecEntry = PayloadRegistry.REGS.entrySet().stream().filter(a -> a.getKey().id().equals(resourceLocation)).findFirst().orElseThrow();
 					StreamCodec<FriendlyByteBuf, ?> value = typeStreamCodecEntry.getValue();
 					Object decode = value.decode(bup);
+					// noinspection unchecked
+					((TriConsumer) handlers.get(typeStreamCodecEntry.getKey())).accept(this, decode, uuid);
 					System.out.println(decode);
 					bup = null;
 					i = 0;
@@ -80,11 +109,19 @@ public class HotJoinServerClientThread extends Thread {
 		runnables.add(f -> runnable.run());
 	}
 
-	public void runTask(Consumer<HotJoinServerClientThread> runnable) {
+	public void runTask(Consumer<HotJoinS2CThread> runnable) {
 		runnables.add(runnable);
 	}
 
-	public <T extends CustomPacketPayload> void send(CustomPacketPayload.Type<T> r, T value) throws IOException {
-		HotJoinCommon.send(r, value, HotJoinCommon.rethrow(socket.getOutputStream()::write));
+	public <T extends CustomPacketPayload> void send(T value) {
+		try {
+			HotJoinCommon.send((CustomPacketPayload.Type<? super T>) value.type(), value, HotJoinCommon.rethrow(socket.getOutputStream()::write));
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	public void disconnect() {
+		this.shouldDisconnect = true;
 	}
 }

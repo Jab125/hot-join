@@ -14,13 +14,15 @@ import java.io.*;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 public class HotJoinClient {
 	private Socket clientSocket;
-	private OutputStream out;
-	private InputStream in;
+	OutputStream out;
+	InputStream in;
 
 	public void startConnection(String ip, int port) throws IOException {
 		clientSocket = new Socket(ip, port);
@@ -41,48 +43,8 @@ public class HotJoinClient {
 		clientSocket.close();
 	}
 
-	public <T extends CustomPacketPayload> void send(CustomPacketPayload.Type<T> r, T value) throws IOException {
-		HotJoinCommon.send(r, value, HotJoinCommon.rethrow(out::write));
-	}
-
-	public static void main(String[] args) throws IOException {
-		HotJoinClient client = new HotJoinClient();
-		System.out.println("Started");
-		client.startConnection("127.0.0.1", 4444);
-		int i = 0;
-		FriendlyByteBuf bup = null;
-		while (true) {
-			byte read = (byte) client.in.read();
-			if (read == -1) break;
-			if (bup == null) {
-				if (read == Constants.MAGIC_START[i]) {
-					i++;
-				} else {
-					i = 0;
-				}
-				if (i == Constants.MAGIC_START.length) {
-					bup = PacketByteBufs.create();
-					i = 0;
-				}
-			} else {
-				bup = bup.writeByte(read);
-				if (read == Constants.MAGIC_END[i]) {
-					i++;
-				} else {
-					i = 0;
-				}
-
-				if (i == Constants.MAGIC_END.length) {
-					ResourceLocation resourceLocation = bup.readResourceLocation();
-					Map.Entry<CustomPacketPayload.Type<?>, StreamCodec<FriendlyByteBuf, ?>> typeStreamCodecEntry = PayloadRegistry.REGS.entrySet().stream().filter(a -> a.getKey().id().equals(resourceLocation)).findFirst().orElseThrow();
-					StreamCodec<FriendlyByteBuf, ?> value = typeStreamCodecEntry.getValue();
-					Object decode = value.decode(bup);
-					System.out.println(decode);
-					bup = null;
-					i = 0;
-				}
-			}
-		}
-		client.stopConnection();
+	static final HashMap<CustomPacketPayload.Type<?>, Consumer<?>> handlers = new HashMap<>();
+	public static <T extends CustomPacketPayload> void registerPacketHandler(CustomPacketPayload.Type<T> t, Consumer<T> value) {
+		handlers.put(t, value);
 	}
 }

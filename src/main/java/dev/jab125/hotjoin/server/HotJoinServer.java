@@ -1,20 +1,18 @@
 package dev.jab125.hotjoin.server;
 
-import dev.jab125.hotjoin.HotJoin;
-import dev.jab125.hotjoin.packet.AlohaPayload;
 import dev.jab125.hotjoin.packet.SteamPayload;
-import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import org.apache.commons.lang3.function.TriConsumer;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.HashMap;
 import java.util.UUID;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 public class HotJoinServer {
 	private ServerSocket serverSocket;
@@ -27,16 +25,16 @@ public class HotJoinServer {
 		//serverSocket.accept()
 		while (true) {
 			Socket accept = serverSocket.accept();
-			HotJoinServerClientThread hotJoinServerClientThread = new HotJoinServerClientThread(accept);
+			HotJoinS2CThread hotJoinServerClientThread = new HotJoinS2CThread(accept);
 			hotJoinServerClientThread.start();
 			System.out.println("A client has connected");
-			hotJoinServerClientThread.runTask(t -> {
-				try {
-					t.send(SteamPayload.TYPE, new SteamPayload(15, 15));
-				} catch (IOException e) {
-					throw new RuntimeException(e);
-				}
-			});
+//			hotJoinServerClientThread.runTask(t -> {
+//				try {
+//					t.send(new SteamPayload(15, 15));
+//				} catch (IOException e) {
+//					throw new RuntimeException(e);
+//				}
+//			});
 		}
 		//out = new PrintWriter(clientSocket.getOutputStream(), true);
 		//in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
@@ -61,5 +59,10 @@ public class HotJoinServer {
 		System.out.println("Started");
 		HotJoinServer server = new HotJoinServer();
 		server.start(4444);
+	}
+
+	static final HashMap<CustomPacketPayload.Type<?>, TriConsumer<HotJoinS2CThread, ?, UUID>> handlers = new HashMap<>();
+	public static <T extends CustomPacketPayload> void registerPacketHandler(CustomPacketPayload.Type<T> t, TriConsumer<HotJoinS2CThread, T, UUID> value) {
+		handlers.put(t, value);
 	}
 }

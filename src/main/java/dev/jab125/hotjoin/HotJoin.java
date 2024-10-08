@@ -11,6 +11,7 @@ import dev.jab125.hotjoin.compat.legacy4j.ILegacy4JModCompat;
 import dev.jab125.hotjoin.compat.legacy4j.Legacy4JModCompat;
 import dev.jab125.hotjoin.packet.AlohaPayload;
 import dev.jab125.hotjoin.packet.SteamPayload;
+import dev.jab125.hotjoin.server.HotJoinS2CThread;
 import dev.jab125.hotjoin.util.HotJoinCodecs;
 import net.deechael.concentration.Concentration;
 import net.deechael.concentration.FullscreenMode;
@@ -61,7 +62,7 @@ public class HotJoin {
 	// That way, it's clear which mod wrote info, warnings, and errors.
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 	public static final ArrayList<UUID> INSTANCES = new ArrayList<>();
-	public static final HashMap<UUID, ServerPlayer> uuidPlayerMap = new HashMap<>();
+	public static final HashMap<UUID, HotJoinS2CThread> uuidPlayerMap = new HashMap<>();
 	public static IAuthMeModCompat authMeCompat;
 	public static ILegacy4JModCompat legacy4JModCompat;
 
@@ -95,101 +96,11 @@ public class HotJoin {
 		} else {
 			legacy4JModCompat = null;
 		}
-		if (!hotjoinClient) {
-			ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) -> {
-				var command = ClientCommandManager.literal("hotjoin");
-				if (FabricLoader.getInstance().isModLoaded("authme")) {
-					command.then(ClientCommandManager.literal("authme").then(ClientCommandManager.literal("microsoft").executes(authMeCompat::hotJoinAuthMeMicrosoft)));
-				}
-
-				if (FabricLoader.getInstance().isModLoaded("legacy")) {
-					command.then(ClientCommandManager.literal("legacy4j").executes(legacy4JModCompat::hotJoinLegacy4J));
-				}
-
-				if (FabricLoader.getInstance().isDevelopmentEnvironment()) {
-					command.executes(this::hotJoin);
-				}
-
-				dispatcher.register(command);
-			});
-		}
-		//noinspection removal
-		PayloadTypeRegistry.playC2S().register(dev.jab125.hotjoin.packet.KidneyPayload.TYPE, dev.jab125.hotjoin.packet.KidneyPayload.STREAM_CODEC);
-		PayloadTypeRegistry.playC2S().register(AlohaPayload.TYPE, AlohaPayload.STREAM_CODEC);
-		PayloadTypeRegistry.playS2C().register(SteamPayload.TYPE, SteamPayload.STREAM_CODEC);
-
-		ClientPlayNetworking.registerGlobalReceiver(SteamPayload.TYPE, (payload, context) -> {
-			context.client().execute(() -> {
-				if (wrapped == null) wrapped = wrap(Minecraft.getInstance());
-				int val = payload.val();
-				switch (payload.in()) {
-					case Instructions.WIDTH -> wrapped.width(val);
-					case Instructions.HEIGHT -> wrapped.height(val);
-					case Instructions.X -> wrapped.x(val);
-					case Instructions.Y -> wrapped.y(val);
-					case Instructions.APPLY -> {
-						wrapped.apply();
-						wrapped = null;
-					}
-				}
-			});
-		});
-		ServerPlayNetworking.registerGlobalReceiver(AlohaPayload.TYPE, (payload, context) -> {
-			if (INSTANCES.contains(payload.uuid())) {
-				uuidPlayerMap.put(payload.uuid(), context.player());
-				arrangeWindows();
-			}
-		});
-		ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> {
-			Optional<Map.Entry<UUID, ServerPlayer>> first = uuidPlayerMap.entrySet().stream().filter(a -> a.getValue() == handler.player).findFirst();
-			if (first.isPresent()) {
-				UUID key = first.get().getKey();
-				INSTANCES.remove(key);
-				uuidPlayerMap.remove(key);
-				if (legacy4JModCompat != null) legacy4JModCompat.leftWorld(key);
-				arrangeWindows();
-			}
-		});
-
-
-		String hotjoinServer = System.getProperty("hotjoin.server", "");
-		String t = System.getProperty("hotjoin.uuid", "");
-		UUID hotjoinUUID = t.isEmpty() ? null : UUID.fromString(t);
-		boolean[] firstTime = new boolean[]{true, true, true};
-		String magic = System.getProperty("hotjoin.magic", "");
-		String compatString = System.getProperty("hotjoin.compat", "authme");
-		IModCompat compat = "authme".equals(compatString) ? authMeCompat : "legacy4j".equals(compatString) ? legacy4JModCompat : null;
-		String legacy4jData = System.getProperty("hotjoin.legacy4jData", "");
-		if (!legacy4jData.isEmpty()) legacy4JModCompat.sendLegacy4jData(legacy4jData);
 
 		if (hotjoinClient) {
-			ScreenEvents.AFTER_INIT.register((client, screen, scaledWidth, scaledHeight) -> {
-				if (screen instanceof TitleScreen || screen instanceof AccessibilityOnboardingScreen) {
-					if (firstTime[0]) firstTime[0] = false;
-					else {
-						if (firstTime[1]) {
-							firstTime[1] = false;
-							if (!legacy4jData.isEmpty()) legacy4JModCompat.joinedWorld();
-							if (!magic.isEmpty()) compat.setSession(HotJoinCodecs.USER_CODEC.decode(NbtOps.INSTANCE, crashgoByeBye(() ->NbtIo.read(ByteStreams.newDataInput(Base64.getDecoder().decode(magic.replace("$", "=")))))).resultOrPartial(LOGGER::error).orElseThrow().getFirst());
-							client.options.getSoundSourceOptionInstance(SoundSource.MUSIC).set(0d);
-						}
-						if (firstTime[2]) {
-							this.join(new ServerData("A Minecraftc nk∆∆i¶•†¥", hotjoinServer, ServerData.Type.LAN));
-							firstTime[2] = false;
-						} else {
-							// we failed to join, we don't want to end up in a loop, so we end now
-							client.stop();
-						}
-					}
-				}
-			});
-
-			ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
-				sender.sendPacket(new AlohaPayload(hotjoinUUID));
-			});
-			ClientPlayConnectionEvents.DISCONNECT.register((clientPacketListener,c) -> {
-				c.stop();
-			});
+			HotJoinClientInit.init();
+		} else {
+			HotJoinServerInit.init();
 		}
 	}
 
@@ -290,7 +201,7 @@ public class HotJoin {
 		void y(int y);
 		void apply();
 	}
-	private static Wrapped wrap(Minecraft minecraft) {
+	public static Wrapped wrap(Minecraft minecraft) {
 		return new Wrapped() {
 			@Override
 			public int getId() {
@@ -348,22 +259,22 @@ public class HotJoin {
 		};
 	}
 
-	private static class Instructions {
+	static class Instructions {
 		public static final int WIDTH = 0;
 		public static final int HEIGHT = 1;
 		public static final int X = 2;
 		public static final int Y = 3;
-		private static final int APPLY = 4;
+		public static final int APPLY = 4;
 	}
-	private static Wrapped wrap(UUID player) {
-		ServerPlayer serverPlayer = uuidPlayerMap.get(player);
+	public static Wrapped wrap(UUID player) {
+		HotJoinS2CThread serverPlayer = uuidPlayerMap.get(player);
 		return new Wrapped() {
 			@Override
 			public int getId() {
 				return INSTANCES.indexOf(player) + 1;
 			}
 			private void send(int a, int b) {
-				ServerPlayNetworking.send(serverPlayer, new SteamPayload(a, b));
+				serverPlayer.runTask(t -> t.send(new SteamPayload(a, b)));
 			}
 
 			@Override
@@ -404,14 +315,7 @@ public class HotJoin {
 	}
 
 
-	private void join(ServerData serverData) {
-		ConnectScreen.startConnecting(new TitleScreen(), Minecraft.getInstance(), ServerAddress.parseString(serverData.ip), serverData, false, null);
-	}
-
-
-
-
-	private int hotJoin(CommandContext<FabricClientCommandSource> a) {
+	static int hotJoin(CommandContext<FabricClientCommandSource> a) {
 		HotJoin.canLaunchOtherwiseThrow();
 		try {
 			launchMinecraftClient(null, null, null);
