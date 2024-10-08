@@ -99,8 +99,10 @@ public class Legacy4JModCompat implements ILegacy4JModCompat {
 	@Override
 	public void joinedWorld() {
 		LegacyOptions legacyOptions = ScreenUtil.getLegacyOptions();
-		legacyOptions.selectedController().set(legacy4JData.controllerIndex());
-		legacyOptions.selectedControllerHandler().set(legacy4JData.selectedControllerHandler());
+		if (legacy4JData != null) {
+			legacyOptions.selectedController().set(legacy4JData.controllerIndex());
+			legacyOptions.selectedControllerHandler().set(legacy4JData.selectedControllerHandler());
+		}
 		legacyOptions.unfocusedInputs().set(true);
 		Minecraft.getInstance().options.pauseOnLostFocus = false;
 		Minecraft.getInstance().options.save();

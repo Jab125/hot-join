@@ -69,7 +69,7 @@ public class HotJoinClientInit {
 				else {
 					if (firstTime[1]) {
 						firstTime[1] = false;
-						if (!legacy4jData.isEmpty()) legacy4JModCompat.joinedWorld();
+						legacy4JModCompat.joinedWorld();
 						if (!magic.isEmpty()) {
 							assert compat != null;
 							compat.setSession(HotJoinCodecs.USER_CODEC.decode(NbtOps.INSTANCE, crashgoByeBye(() -> NbtIo.read(ByteStreams.newDataInput(Base64.getDecoder().decode(magic.replace("$", "=")))))).resultOrPartial(LOGGER::error).orElseThrow().getFirst());
