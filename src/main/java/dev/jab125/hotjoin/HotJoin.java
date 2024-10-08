@@ -366,7 +366,7 @@ public class HotJoin {
 		}
 		addMods += String.join(File.pathSeparator, fjio);
 		var l = new String[0];
-		l = ArrayUtils.addAll(l, "java");
+		l = ArrayUtils.addAll(l, "java", "-Xmx2G");
 		if (Minecraft.ON_OSX) l = ArrayUtils.addAll(l, "-XstartOnFirstThread");
 		if (!System.getProperty("fabric.classPathGroups", "").isEmpty()) l = ArrayUtils.addAll(l, "-Dfabric.classPathGroups=" + System.getProperty("fabric.classPathGroups"));
 		if (!System.getProperty("fabric.remapClasspathFile", "").isEmpty()) l = ArrayUtils.addAll(l, "-Dfabric.remapClasspathFile=" + System.getProperty("fabric.remapClasspathFile"));
