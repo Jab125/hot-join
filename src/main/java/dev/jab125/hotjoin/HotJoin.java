@@ -69,7 +69,7 @@ public class HotJoin {
 	private Wrapped wrapped = null;
 	public static boolean hotjoinClient;
 
-	public static final int LIMIT = 2;
+	public static final int LIMIT = 4;
 	public static boolean canLaunchAnotherClient() {
 		int size = INSTANCES.size();
 		size++; // account for the original client
@@ -111,7 +111,9 @@ public class HotJoin {
 		wrappeds.add(wrap);
 		for (UUID instance : INSTANCES) {
 			if (uuidPlayerMap.containsKey(instance)) {
-				wrappeds.add(wrap(instance));
+				if (uuidPlayerMap.get(instance).isWindowReady) {
+					wrappeds.add(wrap(instance));
+				}
 			} else {
 				System.out.println("We don't have " + instance + "!");
 			}

@@ -71,6 +71,7 @@ public class HotJoinServerInit {
 
 		HotJoinServer.registerPacketHandler(WindowOpenedPayload.TYPE, (thread, payload, uuid) -> {
 			System.out.println("Windows opened.");
+			thread.isWindowReady = true;
 			arrangeWindows();
 		});
 

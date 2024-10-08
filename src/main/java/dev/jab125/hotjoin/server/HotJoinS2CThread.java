@@ -27,6 +27,7 @@ public class HotJoinS2CThread extends Thread {
 	public UUID uuid;
 	CopyOnWriteArrayList<Consumer<HotJoinS2CThread>> runnables = new CopyOnWriteArrayList<>();
 	private boolean shouldDisconnect = false;
+	public boolean isWindowReady = false;
 
 	public HotJoinS2CThread(Socket socket) {
 		this.socket = socket;
@@ -36,6 +37,7 @@ public class HotJoinS2CThread extends Thread {
 			throw new RuntimeException(e);
 		}
 	}
+
 	@Override
 	public void run() {
 		new Thread(() -> {
@@ -57,6 +59,7 @@ public class HotJoinS2CThread extends Thread {
 					HotJoin.LOGGER.error("Failed to stop thread!", e);
 					//throw new RuntimeException(e);
 				}
+				break;
 			}
 			for (Consumer<HotJoinS2CThread> runnable : runnables) {
 				//System.out.println("ran a task");
