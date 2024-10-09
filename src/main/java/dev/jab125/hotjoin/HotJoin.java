@@ -42,6 +42,7 @@ import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
+import org.apache.commons.io.file.PathUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -49,7 +50,9 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.*;
 import java.util.function.Supplier;
 
@@ -355,6 +358,7 @@ public class HotJoin {
 		}
 		Path path = Path.of("second");
 		path.toFile().mkdirs();
+		transfer(path);
 		launchArguments[i + 1] = path.toAbsolutePath().toString();
 		String cp = System.getProperty("java.class.path");
 		List<String> splitClassPath = Arrays.stream(cp.split(File.pathSeparator)).toList();
@@ -389,5 +393,49 @@ public class HotJoin {
 				.redirectError(ProcessBuilder.Redirect.INHERIT);
 		exec.start();
 		return uuid;
+	}
+
+	// Transfer stuff into this folder
+	private static void transfer(Path second) {
+		Path gameDir = FabricLoader.getInstance().getGameDir();
+		PathTransfer pathTransfer = new PathTransfer() {
+
+			@Override
+			public void clearDirectoryRecursive(Path path) throws IOException {
+				Path resolve = second.resolve(path);
+				PathUtils.deleteDirectory(resolve);
+			}
+
+			@Override
+			public void copyFile(Path path) throws IOException {
+				Path original = gameDir.resolve(path);
+				if (!original.toFile().isFile()) return;
+				Path resolve = second.resolve(path);
+				Files.copy(original, resolve, StandardCopyOption.REPLACE_EXISTING);
+			}
+
+			@Override
+			public void copyFolderRecursive(Path path) throws IOException {
+				Path original = gameDir.resolve(path);
+				if (!original.toFile().isDirectory()) return;
+				Path resolve = second.resolve(path);
+				PathUtils.copyDirectory(original, resolve);
+			}
+		};
+		try {
+			pathTransfer.copyFile(Path.of("resource_assorts.json"));
+			pathTransfer.clearDirectoryRecursive(Path.of("resource_assorts"));
+			pathTransfer.copyFolderRecursive(Path.of("resource_assorts"));
+			pathTransfer.clearDirectoryRecursive(Path.of("resourcepacks"));
+			pathTransfer.copyFolderRecursive(Path.of("resourcepacks"));
+		} catch (Throwable t) {
+
+		}
+	}
+
+	interface PathTransfer {
+		void clearDirectoryRecursive(Path path) throws Throwable;
+		void copyFile(Path path) throws Throwable;
+		void copyFolderRecursive(Path path) throws Throwable;
 	}
 }
