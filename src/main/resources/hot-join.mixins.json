@@ -15,6 +15,7 @@
     "WindowMixin",
     "authme.MicrosoftAuthScreenMixin",
     "legacy4j.ChooseUserScreenMixin",
+    "legacy4j.LoadingOverlayMixin",
     "legacy4j.RealmsAvailabilityMixin"
   ],
   "mixins": [
