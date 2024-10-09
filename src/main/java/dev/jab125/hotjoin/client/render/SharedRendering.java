@@ -17,8 +17,8 @@ public class SharedRendering {
 	public static Monitor bestMonitor;
 
 	public static void render(GuiGraphics graphics, int width, int height) {
-		graphics.fill(width / 2 - 10, height / 2 - 10, width / 2 + 10, height / 2 + 10, 0xffeabc3a);
-		graphics.drawCenteredString(Minecraft.getInstance().font, "HELLO!", width / 2, height / 2 - Minecraft.getInstance().font.lineHeight / 2, 0xffffffff);
+		//graphics.fill(width / 2 - 10, height / 2 - 10, width / 2 + 10, height / 2 + 10, 0xffeabc3a);
+		//graphics.drawCenteredString(Minecraft.getInstance().font, "HELLO!", width / 2, height / 2 - Minecraft.getInstance().font.lineHeight / 2, 0xffffffff);
 	}
 
 	public static void globalToastManager() {
