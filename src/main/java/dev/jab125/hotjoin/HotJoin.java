@@ -4,6 +4,7 @@ import com.google.common.io.ByteStreams;
 import com.mojang.blaze3d.platform.Monitor;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.brigadier.context.CommandContext;
+import dev.jab125.hotjoin.client.render.SharedRendering;
 import dev.jab125.hotjoin.compat.IModCompat;
 import dev.jab125.hotjoin.compat.authme.IAuthMeModCompat;
 import dev.jab125.hotjoin.compat.authme.AuthMeCompat;
@@ -259,7 +260,11 @@ public class HotJoin {
 					height = Integer.MIN_VALUE;
 				}
 				instance.save();
-				RenderSystem.recordRenderCall(() -> Concentration.toggleFullScreenMode(Minecraft.getInstance().options, true));
+				RenderSystem.recordRenderCall(() -> {
+					Concentration.toggleFullScreenMode(Minecraft.getInstance().options, true);
+					SharedRendering.scale = -1;
+					SharedRendering.bestMonitor = null;
+				});
 			}
 		};
 	}

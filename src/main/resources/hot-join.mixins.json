@@ -7,8 +7,9 @@
     "defaultRequire": 1
   },
   "client": [
-    "WindowMixin",
+    "GameRendererMixin",
     "UserAccessor",
+    "WindowMixin",
     "authme.MicrosoftAuthScreenMixin",
     "legacy4j.ChooseUserScreenMixin",
     "legacy4j.RealmsAvailabilityMixin"
