@@ -8,6 +8,7 @@
   },
   "client": [
     "GameRendererMixin",
+    "KeyboardHandlerMixin",
     "UserAccessor",
     "WindowMixin",
     "authme.MicrosoftAuthScreenMixin",
