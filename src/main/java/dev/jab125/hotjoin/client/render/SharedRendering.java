@@ -8,6 +8,8 @@ import net.deechael.concentration.fabric.ConcentrationFabric;
 import net.deechael.concentration.fabric.config.ConcentrationConfigFabric;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.network.chat.Component;
+import wily.legacy.client.LegacyTip;
 
 // Render something across multiple windows.
 public class SharedRendering {
@@ -17,6 +19,10 @@ public class SharedRendering {
 	public static void render(GuiGraphics graphics, int width, int height) {
 		graphics.fill(width / 2 - 10, height / 2 - 10, width / 2 + 10, height / 2 + 10, 0xffeabc3a);
 		graphics.drawCenteredString(Minecraft.getInstance().font, "HELLO!", width / 2, height / 2 - Minecraft.getInstance().font.lineHeight / 2, 0xffffffff);
+	}
+
+	public static void globalToastManager() {
+		//new LegacyTip(Component.literal("Welcome, " + player));
 	}
 
 	@SuppressWarnings("DeprecatedIsStillUsed")
