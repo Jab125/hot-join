@@ -7,8 +7,8 @@ import net.minecraft.resources.ResourceLocation;
 
 public record WindowOpenedPayload() implements CustomPacketPayload {
 	public static final ResourceLocation ID = ResourceLocation.fromNamespaceAndPath("hotjoin", "window-opened");
-	public static final Type<ScreenshotRequestPayload> TYPE = new Type<>(ScreenshotRequestPayload.ID);
-	public static final StreamCodec<FriendlyByteBuf, ScreenshotRequestPayload> STREAM_CODEC = StreamCodec.unit(new ScreenshotRequestPayload());
+	public static final Type<WindowOpenedPayload> TYPE = new Type<>(WindowOpenedPayload.ID);
+	public static final StreamCodec<FriendlyByteBuf, WindowOpenedPayload> STREAM_CODEC = StreamCodec.unit(new WindowOpenedPayload());
 	@Override
 	public Type<? extends CustomPacketPayload> type() {
 		return TYPE;

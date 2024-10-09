@@ -21,7 +21,6 @@ public class KeyboardHandlerMixin {
 		//						this.minecraft.getMainRenderTarget(),
 		//						component -> this.minecraft.execute(() -> this.minecraft.gui.getChat().addMessage(component))
 		//					);
-		Screenshot.stitchScreenshots();
-		net.minecraft.client.Screenshot.grab();
+		Screenshot.takeScreenshot();
 	}
 }

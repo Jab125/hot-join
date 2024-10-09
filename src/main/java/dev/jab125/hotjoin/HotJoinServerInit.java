@@ -1,8 +1,8 @@
 package dev.jab125.hotjoin;
 
-import dev.jab125.hotjoin.packet.AlohaPayload;
-import dev.jab125.hotjoin.packet.ClosingPayload;
-import dev.jab125.hotjoin.packet.WindowOpenedPayload;
+import com.mojang.blaze3d.systems.RenderSystem;
+import dev.jab125.hotjoin.client.Screenshot;
+import dev.jab125.hotjoin.packet.*;
 import dev.jab125.hotjoin.server.HotJoinClient;
 import dev.jab125.hotjoin.server.HotJoinServer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
@@ -83,6 +83,12 @@ public class HotJoinServerInit {
 			if (legacy4JModCompat != null) legacy4JModCompat.leftWorld(uuid);
 			arrangeWindows();
 		});
+
+		HotJoinServer.registerPacketHandler(ScreenshotRequestPayload.TYPE, (thread, payload, uuid) -> {
+			RenderSystem.recordRenderCall(Screenshot::takeScreenshot);
+		});
+
+		HotJoinServer.registerPacketHandler(ScreenshotC2SPayload.TYPE, Screenshot::handle);
 
 		// TODO
 //		HotJoinServer.registerPacketHandler(AlohaPayload.TYPE, payload -> {

@@ -1,11 +1,15 @@
 package dev.jab125.hotjoin;
 
 import com.google.common.io.ByteStreams;
+import com.mojang.blaze3d.systems.RenderSystem;
+import dev.jab125.hotjoin.client.Screenshot;
 import dev.jab125.hotjoin.compat.IModCompat;
 import dev.jab125.hotjoin.packet.*;
 import dev.jab125.hotjoin.server.HotJoinC2SThread;
 import dev.jab125.hotjoin.server.HotJoinClient;
 import dev.jab125.hotjoin.util.HotJoinCodecs;
+import net.deechael.concentration.Concentration;
+import net.deechael.concentration.fabric.config.ConcentrationConfigFabric;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -20,6 +24,7 @@ import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.sounds.SoundSource;
 
+import java.nio.file.Path;
 import java.util.Base64;
 import java.util.UUID;
 
@@ -27,6 +32,8 @@ import static dev.jab125.hotjoin.HotJoin.*;
 
 public class HotJoinClientInit {
 	private static HotJoin.Wrapped wrapped;
+	public static HotJoinC2SThread hotJoinC2SThread;
+
 	public static void init() {
 		HotJoinClient.registerPacketHandler(SteamPayload.TYPE, payload -> {
 			Minecraft.getInstance().execute(() -> {
@@ -45,13 +52,32 @@ public class HotJoinClientInit {
 			});
 		});
 
+		HotJoinClient.registerPacketHandler(ScreenshotRequestPayload.TYPE, payload -> {
+			RenderSystem.recordRenderCall(() -> {
+				Path ts = Screenshot.ts();
+				hotJoinC2SThread.runTask(t -> {
+					t.send(
+						new ScreenshotC2SPayload(
+								ts,
+								ConcentrationConfigFabric.getInstance().x,
+								ConcentrationConfigFabric.getInstance().y,
+								ConcentrationConfigFabric.getInstance().width,
+								ConcentrationConfigFabric.getInstance().height
+						)
+					);
+
+				}
+				);
+			});
+		});
+
 		HotJoinClient.registerPacketHandler(SdlNativesPayload.TYPE, payload -> {
 			Minecraft.getInstance().execute(() -> {
 				legacy4JModCompat.receivedSdlNatives(payload);
 			});
 		});
 
-		HotJoinC2SThread hotJoinC2SThread = new HotJoinC2SThread();
+		HotJoinClientInit.hotJoinC2SThread = new HotJoinC2SThread();
 		hotJoinC2SThread.start();
 
 		boolean[] firstTime = new boolean[]{true, true, true};

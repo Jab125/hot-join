@@ -10,7 +10,12 @@ public class Constants {
 			127,
 			-13,
 			14,
-			17
+			17,
+			127,
+			127,
+			127,
+			14,
+			15
 	};
 	public static final byte[] MAGIC_END = new byte[]{
 			19,
@@ -18,6 +23,10 @@ public class Constants {
 			-127,
 			-127,
 			127,
-			-128
+			-128,
+			17,
+			19,
+			81,
+			-16
 	};
 }

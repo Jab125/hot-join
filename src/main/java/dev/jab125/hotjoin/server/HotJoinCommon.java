@@ -21,6 +21,7 @@ public class HotJoinCommon {
 		PayloadRegistry.register(ClosingPayload.TYPE, ClosingPayload.STREAM_CODEC);
 		PayloadRegistry.register(WindowOpenedPayload.TYPE, WindowOpenedPayload.STREAM_CODEC);
 		PayloadRegistry.register(ScreenshotRequestPayload.TYPE, ScreenshotRequestPayload.STREAM_CODEC);
+		PayloadRegistry.register(ScreenshotC2SPayload.TYPE, ScreenshotC2SPayload.STREAM_CODEC);
 		PayloadRegistry.register(SdlNativesPayload.TYPE, SdlNativesPayload.STREAM_CODEC);
 		initted = true;
 	}
