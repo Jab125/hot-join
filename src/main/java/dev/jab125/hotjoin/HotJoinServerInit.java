@@ -7,6 +7,7 @@ import dev.jab125.hotjoin.server.HotJoinClient;
 import dev.jab125.hotjoin.server.HotJoinServer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.loader.api.FabricLoader;
@@ -97,5 +98,9 @@ public class HotJoinServerInit {
 //				arrangeWindows();
 //			}
 //		});
+
+		ClientLifecycleEvents.CLIENT_STARTED.register(a -> {
+			HotJoin.arrangeWindows();
+		});
 	}
 }
