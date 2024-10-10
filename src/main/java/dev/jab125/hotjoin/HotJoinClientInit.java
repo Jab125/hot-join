@@ -44,6 +44,7 @@ public class HotJoinClientInit {
 					case HotJoin.Instructions.HEIGHT -> wrapped.height(val);
 					case HotJoin.Instructions.X -> wrapped.x(val);
 					case HotJoin.Instructions.Y -> wrapped.y(val);
+					case HotJoin.Instructions.FPS ->  wrapped.capFPS(val);
 					case HotJoin.Instructions.APPLY -> {
 						wrapped.apply();
 						wrapped = null;

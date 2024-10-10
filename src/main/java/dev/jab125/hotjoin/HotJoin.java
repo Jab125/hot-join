@@ -1,50 +1,28 @@
 package dev.jab125.hotjoin;
 
-import com.google.common.io.ByteStreams;
 import com.mojang.blaze3d.platform.Monitor;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.brigadier.context.CommandContext;
 import dev.jab125.hotjoin.client.render.SharedRendering;
-import dev.jab125.hotjoin.compat.IModCompat;
 import dev.jab125.hotjoin.compat.authme.IAuthMeModCompat;
 import dev.jab125.hotjoin.compat.authme.AuthMeCompat;
 import dev.jab125.hotjoin.compat.legacy4j.ILegacy4JModCompat;
 import dev.jab125.hotjoin.compat.legacy4j.Legacy4JModCompat;
-import dev.jab125.hotjoin.packet.AlohaPayload;
 import dev.jab125.hotjoin.packet.SteamPayload;
 import dev.jab125.hotjoin.server.HotJoinS2CThread;
-import dev.jab125.hotjoin.util.HotJoinCodecs;
 import net.deechael.concentration.Concentration;
 import net.deechael.concentration.FullscreenMode;
 import net.deechael.concentration.fabric.config.ConcentrationConfigFabric;
 import net.deechael.concentration.mixin.accessor.WindowAccessor;
 
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
-import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
 import net.fabricmc.loader.api.metadata.ModOrigin;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screens.AccessibilityOnboardingScreen;
-import net.minecraft.client.gui.screens.ConnectScreen;
-import net.minecraft.client.gui.screens.TitleScreen;
-import net.minecraft.client.multiplayer.ServerData;
-import net.minecraft.client.multiplayer.resolver.ServerAddress;
 import net.minecraft.client.server.IntegratedServer;
-import net.minecraft.nbt.NbtIo;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundSource;
 import org.apache.commons.io.file.PathUtils;
 import org.apache.commons.lang3.ArrayUtils;
-import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,7 +32,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.*;
-import java.util.function.Supplier;
 
 import static java.util.function.Predicate.not;
 
@@ -208,6 +185,7 @@ public class HotJoin {
 		void height(int height);
 		void x(int x);
 		void y(int y);
+		void capFPS(int maxFps);
 		void apply();
 	}
 	public static Wrapped wrap(Minecraft minecraft) {
@@ -221,6 +199,7 @@ public class HotJoin {
 			private int height = Integer.MIN_VALUE;
 			private int x = Integer.MIN_VALUE;
 			private int y = Integer.MIN_VALUE;
+			private int maxFps = Integer.MIN_VALUE;
 			@Override
 			public void width(int width) {
 				this.width = width;
@@ -239,6 +218,11 @@ public class HotJoin {
 			@Override
 			public void y(int y) {
 				this.y = y;
+			}
+
+			@Override
+			public void capFPS(int maxFps) {
+				this.maxFps = maxFps;
 			}
 
 			@Override
@@ -262,6 +246,10 @@ public class HotJoin {
 					instance.height = height;
 					height = Integer.MIN_VALUE;
 				}
+				if (maxFps != Integer.MIN_VALUE) {
+					Minecraft.getInstance().options.framerateLimit().set(maxFps);
+					maxFps = Integer.MIN_VALUE;
+				}
 				instance.save();
 				RenderSystem.recordRenderCall(() -> {
 					Concentration.toggleFullScreenMode(Minecraft.getInstance().options, true);
@@ -278,6 +266,7 @@ public class HotJoin {
 		public static final int X = 2;
 		public static final int Y = 3;
 		public static final int APPLY = 4;
+		public static final int FPS = 5;
 	}
 	public static Wrapped wrap(UUID player) {
 		HotJoinS2CThread serverPlayer = uuidPlayerMap.get(player);
@@ -308,6 +297,11 @@ public class HotJoin {
 			@Override
 			public void y(int y) {
 				send(Instructions.Y, y);
+			}
+
+			@Override
+			public void capFPS(int maxFps) {
+				send(Instructions.FPS, maxFps);
 			}
 
 			@Override
