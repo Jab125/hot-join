@@ -9,7 +9,8 @@
 	],
 	"contact": {
 		"homepage": "https://modrinth.com/mod/hotjoin",
-		"sources": "https://github.com/Jab125/hotjoin"
+		"sources": "https://github.com/Jab125/hot-join",
+		"issues": "https://github.com/Jab125/hot-join/issues"
 	},
 	"license": "LGPL-2.1-only",
 	"icon": "assets/hot-join/icon.png",
