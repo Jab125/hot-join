@@ -105,7 +105,17 @@ public class HotJoin {
 		assert bestMonitor != null;
 		int width = bestMonitor.getCurrentMode().getWidth();
 		int height = bestMonitor.getCurrentMode().getHeight();
-
+		int maxFps;
+		if (wrappeds.size() >= 4) {
+			maxFps = 15;
+		} else if (wrappeds.size() >= 2) {
+			maxFps = 30;
+		} else {
+			maxFps = 60;
+		}
+		for (Wrapped wrapped : wrappeds) {
+			wrapped.capFPS(maxFps);
+		}
 		if (wrappeds.size() == 1) {
 			Wrapped wrapped = wrappeds.get(0);
 			wrapped.x(0);
