@@ -7,6 +7,7 @@ import dev.jab125.hotjoin.packet.SdlNativesPayload;
 import dev.jab125.hotjoin.server.HotJoinS2CThread;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.User;
+import net.minecraft.client.gui.GuiGraphics;
 
 import java.util.UUID;
 
@@ -19,4 +20,5 @@ public interface ILegacy4JModCompat extends IModCompat {
 	void leftWorld(UUID uuid);
 	void connectionEstablished(HotJoinS2CThread thread, AlohaPayload payload, UUID uuid);
 	void receivedSdlNatives(SdlNativesPayload payload);
+	void renderUsername(GuiGraphics graphics);
 }

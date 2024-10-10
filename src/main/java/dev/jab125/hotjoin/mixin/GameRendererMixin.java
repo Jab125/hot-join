@@ -1,17 +1,12 @@
 package dev.jab125.hotjoin.mixin;
 
-import com.mojang.blaze3d.platform.Window;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.VertexSorting;
+import dev.jab125.hotjoin.HotJoin;
 import dev.jab125.hotjoin.client.render.SharedRendering;
-import net.deechael.concentration.fabric.config.ConcentrationConfigFabric;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.RenderBuffers;
-import org.joml.Matrix4f;
-import org.joml.Matrix4fStack;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -43,6 +38,7 @@ public class GameRendererMixin {
 //		//matrix4fStack.translation(0.0F, 0.0F, -11000.0F);
 //		RenderSystem.applyModelViewMatrix();
 		GuiGraphics graphics = new GuiGraphics(minecraft, this.renderBuffers.bufferSource());
+		HotJoin.legacy4JModCompat.renderUsername(graphics);
 		SharedRendering.render0(graphics);
 		//matrix4fStack.popMatrix();
 	}

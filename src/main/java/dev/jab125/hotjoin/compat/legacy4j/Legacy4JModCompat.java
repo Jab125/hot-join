@@ -13,6 +13,9 @@ import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.User;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.LoadingOverlay;
+import net.minecraft.client.resources.language.I18n;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.NbtOps;
@@ -131,5 +134,15 @@ public class Legacy4JModCompat implements ILegacy4JModCompat {
 	public void receivedSdlNatives(SdlNativesPayload payload) {
 		Path path = payload.path();
 		SDLControllerHandler.nativesFile = path.toFile();
+	}
+
+	@Override
+	public void renderUsername(GuiGraphics graphics) {
+		if (Minecraft.getInstance().getOverlay() instanceof LoadingOverlay) return;
+		if (Minecraft.getInstance().getUser() == null) return;
+		if (HotJoin.hotjoinClient || HotJoin.uuidPlayerMap.values().stream().anyMatch(a -> a.isWindowReady)) {
+			String username = MCAccount.isOfflineUser() ? I18n.get("legacy.menu.offline_user", Minecraft.getInstance().getUser().getName()) : Minecraft.getInstance().getUser().getName();
+			graphics.drawString(Minecraft.getInstance().font, username, graphics.guiWidth() - 33 - Minecraft.getInstance().font.width(username), graphics.guiHeight() - 27, 16777215);
+		}
 	}
 }
