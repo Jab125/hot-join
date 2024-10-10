@@ -428,6 +428,14 @@ public class HotJoin {
 			pathTransfer.copyFolderRecursive(Path.of("resource_assorts"));
 			pathTransfer.clearDirectoryRecursive(Path.of("resourcepacks"));
 			pathTransfer.copyFolderRecursive(Path.of("resourcepacks"));
+
+			pathTransfer.clearDirectoryRecursive(Path.of("config"));
+			pathTransfer.copyFolderRecursive(Path.of("config"));
+
+			pathTransfer.clearDirectoryRecursive(Path.of("shaderpacks"));
+			pathTransfer.copyFolderRecursive(Path.of("shaderpacks"));
+
+			pathTransfer.copyFile(Path.of("options.txt"));
 		} catch (Throwable t) {
 
 		}

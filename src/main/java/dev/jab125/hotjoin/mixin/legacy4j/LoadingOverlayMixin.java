@@ -17,18 +17,19 @@ import java.util.Optional;
 
 @Mixin(value = LoadingOverlay.class, priority = 999)
 public class LoadingOverlayMixin {
-	@Unique
-	private boolean hotjoin$cleared = false;
-	@Inject(method = "render", at = @At("HEAD"))
-	void render(GuiGraphics guiGraphics, int i, int j, float f, CallbackInfo ci) throws IllegalAccessException {
-		if (HotJoin.hotjoinClient && !hotjoin$cleared) {
-			Optional<Field> loadIntroLocation = Arrays.stream(LoadingOverlay.class.getDeclaredFields()).filter(a -> a.getName().contains("loadIntroLocation")).findFirst();
-			Field field = loadIntroLocation.orElseThrow();
-			field.setAccessible(true);
-			field.set((LoadingOverlay) (Object) this, true);
-			LegacyResourceManager.INTROS.clear();
-			LegacyResourceManager.INTROS.add(ResourceLocation.fromNamespaceAndPath("legacy", "textures/gui/intro/background.png"));
-			hotjoin$cleared = true;
-		}
-	}
+	// TODO
+//	@Unique
+//	private boolean hotjoin$cleared = false;
+//	@Inject(method = "render", at = @At("HEAD"))
+//	void render(GuiGraphics guiGraphics, int i, int j, float f, CallbackInfo ci) throws IllegalAccessException {
+//		if (HotJoin.hotjoinClient && !hotjoin$cleared) {
+//			Optional<Field> loadIntroLocation = Arrays.stream(LoadingOverlay.class.getDeclaredFields()).filter(a -> a.getName().contains("loadIntroLocation")).findFirst();
+//			Field field = loadIntroLocation.orElseThrow();
+//			field.setAccessible(true);
+//			field.set((LoadingOverlay) (Object) this, true);
+//			LegacyResourceManager.INTROS.clear();
+//			LegacyResourceManager.INTROS.add(ResourceLocation.fromNamespaceAndPath("legacy", "textures/gui/intro/background.png"));
+//			hotjoin$cleared = true;
+//		}
+//	}
 }
