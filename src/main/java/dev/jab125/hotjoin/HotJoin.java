@@ -25,6 +25,8 @@ import org.apache.commons.io.file.PathUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import wily.legacy.client.screen.Assort;
+import wily.legacy.util.ScreenUtil;
 
 import java.io.File;
 import java.io.IOException;
@@ -107,9 +109,9 @@ public class HotJoin {
 		int height = bestMonitor.getCurrentMode().getHeight();
 		int maxFps;
 		if (wrappeds.size() >= 4) {
-			maxFps = 15;
-		} else if (wrappeds.size() >= 2) {
 			maxFps = 30;
+		} else if (wrappeds.size() >= 2) {
+			maxFps = 60;
 		} else {
 			maxFps = 60;
 		}
@@ -427,6 +429,8 @@ public class HotJoin {
 			}
 		};
 		try {
+			Minecraft.getInstance().options.save();
+			Assort.save();
 			pathTransfer.copyFile(Path.of("resource_assorts.json"));
 			pathTransfer.clearDirectoryRecursive(Path.of("resource_assorts"));
 			pathTransfer.copyFolderRecursive(Path.of("resource_assorts"));
