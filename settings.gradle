@@ -4,7 +4,12 @@ pluginManagement {
 			name = 'Fabric'
 			url = 'https://maven.fabricmc.net/'
 		}
+		maven {
+			name = 'Sinytra'
+			url = 'https://maven.sinytra.org/'
+		}
 		mavenCentral()
 		gradlePluginPortal()
+		mavenLocal()
 	}
 }
