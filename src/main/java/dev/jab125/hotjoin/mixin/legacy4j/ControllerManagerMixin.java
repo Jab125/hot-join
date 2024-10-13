@@ -23,13 +23,13 @@ public class ControllerManagerMixin {
 	@Inject(method = "run", at = @At("HEAD"), remap = false)
 	void interceptRun(CallbackInfo ci) {
 		if (!HotJoin.canLaunchAnotherClient()) return;
-		if (!(Minecraft.getInstance().level != null && Minecraft.getInstance().getSingleplayerServer() != null && Minecraft.getInstance().screen == null)) return;
+		if (!(Minecraft.getInstance().level != null || Minecraft.getInstance().getSingleplayerServer() != null || Minecraft.getInstance().screen != null)) return;
 		Controller.Handler handler = ControllerManager.getHandler();
 		// this goes from 0 to 15
 		//handler.getController()
 		for (int i = 0; i < 16; i++) {
+			if (i == ScreenUtil.getLegacyOptions().selectedController().get()) continue;
 			if (Minecraft.getInstance().isRunning() && ControllerManager.getHandler().update()) {
-				if (i == ScreenUtil.getLegacyOptions().selectedControllerHandler().get()) continue;
 				int finalI1 = i;
 				if (Legacy4JModCompat.uuidLegacy4JMap.values().stream().map(Legacy4JData::controllerIndex).anyMatch(j -> j.equals(finalI1))) continue;
 				if (handler.isValidController(i)) {
