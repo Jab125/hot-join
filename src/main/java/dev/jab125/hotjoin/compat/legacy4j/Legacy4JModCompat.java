@@ -67,7 +67,7 @@ public class Legacy4JModCompat implements ILegacy4JModCompat {
 	}
 
 	public static void openLegacy4JUserPicker(Legacy4JData data) {
-		ScreenUtil.getLegacyOptions().selectedController().set(data.controllerIndex());
+		if (data != null) ScreenUtil.getLegacyOptions().selectedController().set(data.controllerIndex());
 		ChooseUserScreen chooseUserScreen = new ChooseUserScreen(null);
 		((AuthCallback)chooseUserScreen).hotjoin$authResponse(s -> {
 			Minecraft.getInstance().getToasts().addToast(new LegacyTip(Component.literal("Success, joining world...")));
@@ -156,7 +156,7 @@ public class Legacy4JModCompat implements ILegacy4JModCompat {
 			if (newScreen instanceof ConfirmationScreen) {
 
 			} else {
-				ScreenUtil.getLegacyOptions().selectedController().set(o.oldControllerIndex());
+				if (o != null) ScreenUtil.getLegacyOptions().selectedController().set(o.oldControllerIndex());
 			}
 		}
 	}
