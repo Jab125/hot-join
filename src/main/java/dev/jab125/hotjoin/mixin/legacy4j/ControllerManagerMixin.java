@@ -50,7 +50,7 @@ public class ControllerManagerMixin {
 									int finalI = i;
 									Minecraft.getInstance().tell(() -> {
 										if (Minecraft.getInstance().screen != null) return;
-										Legacy4JModCompat.openLegacy4JUserPicker(new Legacy4JData(controller.getName(), finalI,ScreenUtil.getLegacyOptions().selectedControllerHandler().get()));
+										Legacy4JModCompat.openLegacy4JUserPicker(new Legacy4JData(controller.getName(), ScreenUtil.getLegacyOptions().selectedController().get(), finalI, ScreenUtil.getLegacyOptions().selectedControllerHandler().get()));
 									});
 								}
 								//System.out.println(controller.getName() + " is holding down the guide button!");
@@ -65,7 +65,7 @@ public class ControllerManagerMixin {
 								int finalI = i;
 								Minecraft.getInstance().tell(() -> {
 									if (Minecraft.getInstance().screen != null) return;
-									Legacy4JModCompat.openLegacy4JUserPicker(new Legacy4JData(controller.getName(), finalI,ScreenUtil.getLegacyOptions().selectedControllerHandler().get()));
+									Legacy4JModCompat.openLegacy4JUserPicker(new Legacy4JData(controller.getName(), ScreenUtil.getLegacyOptions().selectedController().get(), finalI, ScreenUtil.getLegacyOptions().selectedControllerHandler().get()));
 								});
 							}
 						}

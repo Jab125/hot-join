@@ -15,6 +15,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.User;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.LoadingOverlay;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtIo;
@@ -25,6 +26,7 @@ import wily.legacy.client.LegacyOptions;
 import wily.legacy.client.LegacyTip;
 import wily.legacy.client.controller.SDLControllerHandler;
 import wily.legacy.client.screen.ChooseUserScreen;
+import wily.legacy.client.screen.ConfirmationScreen;
 import wily.legacy.util.MCAccount;
 import wily.legacy.util.ScreenUtil;
 
@@ -65,6 +67,7 @@ public class Legacy4JModCompat implements ILegacy4JModCompat {
 	}
 
 	public static void openLegacy4JUserPicker(Legacy4JData data) {
+		ScreenUtil.getLegacyOptions().selectedController().set(data.controllerIndex());
 		ChooseUserScreen chooseUserScreen = new ChooseUserScreen(null);
 		((AuthCallback)chooseUserScreen).hotjoin$authResponse(s -> {
 			Minecraft.getInstance().getToasts().addToast(new LegacyTip(Component.literal("Success, joining world...")));
@@ -143,6 +146,18 @@ public class Legacy4JModCompat implements ILegacy4JModCompat {
 		if (HotJoin.hotjoinClient || HotJoin.uuidPlayerMap.values().stream().anyMatch(a -> a.isWindowReady)) {
 			String username = MCAccount.isOfflineUser() ? I18n.get("legacy.menu.offline_user", Minecraft.getInstance().getUser().getName()) : Minecraft.getInstance().getUser().getName();
 			graphics.drawString(Minecraft.getInstance().font, username, graphics.guiWidth() - 33 - Minecraft.getInstance().font.width(username), graphics.guiHeight() - 27, 16777215);
+		}
+	}
+
+	@Override
+	public void onBeginScreenSet(Screen previousScreen, Screen newScreen) {
+		if (previousScreen instanceof ChooseUserScreen screen) {
+			Legacy4JData o = (Legacy4JData) ((ChooseUserScreen & AuthCallback) screen).hotjoin$legacy4jData();
+			if (newScreen instanceof ConfirmationScreen) {
+
+			} else {
+				ScreenUtil.getLegacyOptions().selectedController().set(o.oldControllerIndex());
+			}
 		}
 	}
 }
