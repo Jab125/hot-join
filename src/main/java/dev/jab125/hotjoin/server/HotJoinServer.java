@@ -1,5 +1,7 @@
 package dev.jab125.hotjoin.server;
 
+import dev.jab125.hotjoin.HotJoin;
+import dev.jab125.hotjoin.packet.AlohaPayload;
 import dev.jab125.hotjoin.packet.SteamPayload;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import org.apache.commons.lang3.function.TriConsumer;
@@ -63,6 +65,11 @@ public class HotJoinServer {
 
 	static final HashMap<CustomPacketPayload.Type<?>, TriConsumer<HotJoinS2CThread, ?, UUID>> handlers = new HashMap<>();
 	public static <T extends CustomPacketPayload> void registerPacketHandler(CustomPacketPayload.Type<T> t, TriConsumer<HotJoinS2CThread, T, UUID> value) {
-		handlers.put(t, value);
+		if (t != AlohaPayload.TYPE) {
+			handlers.put(t, (k, v, s) -> {
+				if (!HotJoin.INSTANCES.contains(s)) k.disconnect();
+				else value.accept(k, (T) v, s);
+			});
+		} else handlers.put(t, value);
 	}
 }

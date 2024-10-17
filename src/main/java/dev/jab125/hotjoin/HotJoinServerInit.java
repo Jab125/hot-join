@@ -60,7 +60,7 @@ public class HotJoinServerInit {
 
 		HotJoinServer.registerPacketHandler(AlohaPayload.TYPE, (thread, payload, uuid) -> {
 			// UUID is null at the moment, we set it here
-			System.out.println("ALOHA!");
+			System.out.println("New client joined with UUID " + uuid);
 			thread.uuid = payload.uuid();
 			uuidPlayerMap.put(thread.uuid, thread);
 			// Malicious connection?
