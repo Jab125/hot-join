@@ -19,6 +19,7 @@ import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
 import net.fabricmc.loader.api.metadata.ModOrigin;
+import net.fabricmc.loader.impl.util.LoaderUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.server.IntegratedServer;
 import org.apache.commons.io.file.PathUtils;
@@ -33,6 +34,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.*;
 
@@ -384,7 +386,23 @@ public class HotJoin {
 		}
 		addMods += String.join(File.pathSeparator, fjio);
 		var l = new String[0];
-		l = ArrayUtils.addAll(l, "java", "-Xmx2G");
+		Path javaPath = null;
+		{
+			Path javaBinDir = LoaderUtil.normalizePath(Paths.get(System.getProperty("java.home"), "bin"));
+			String[] executables = { "javaw.exe", "java.exe", "java" };
+
+			for (String executable : executables) {
+				Path jpath = javaBinDir.resolve(executable);
+
+				if (Files.isRegularFile(jpath)) {
+					javaPath = jpath;
+					break;
+				}
+			}
+
+			if (javaPath == null) throw new RuntimeException("Can't find java executable in " + javaBinDir + "!");
+		}
+		l = ArrayUtils.addAll(l, javaPath.toAbsolutePath().toString(), "-Xmx2G");
 		if (Minecraft.ON_OSX) l = ArrayUtils.addAll(l, "-XstartOnFirstThread");
 		if (!System.getProperty("fabric.classPathGroups", "").isEmpty()) l = ArrayUtils.addAll(l, "-Dfabric.classPathGroups=" + System.getProperty("fabric.classPathGroups"));
 		if (!System.getProperty("fabric.remapClasspathFile", "").isEmpty()) l = ArrayUtils.addAll(l, "-Dfabric.remapClasspathFile=" + System.getProperty("fabric.remapClasspathFile"));
