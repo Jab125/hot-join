@@ -3,14 +3,9 @@ package dev.jab125.hotjoin.client.render;
 import com.mojang.blaze3d.platform.Monitor;
 import com.mojang.blaze3d.platform.VideoMode;
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.deechael.concentration.Concentration;
-import net.deechael.concentration.fabric.ConcentrationFabric;
 import net.deechael.concentration.fabric.config.ConcentrationConfigFabric;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.network.chat.Component;
-import wily.legacy.client.LegacyTip;
-import wily.legacy.util.ScreenUtil;
 
 // Render something across multiple windows.
 public class SharedRendering {
