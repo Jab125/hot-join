@@ -1,5 +1,5 @@
 - Screenshots taking via F2 now takes a screenshot of all splitscreen instances.
-- `options.txt`, configs, and shaderpacks are now transferred when an instance is created.
+- `options.txt`, resource packs, configs, and shaderpacks are now transferred when an instance is created. If Legacy4J is installed then resource assorts would also be transferred.
 - (Legacy4J) Player usernames are now rendered in the bottom left corner of an instance when splitscreen is active to help distinguish it from other players.
 - The original instance now correctly resizes if it was closed via Cmd+Q / Alt+F4.
 - Fixed the GitHub link.
