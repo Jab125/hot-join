@@ -12,3 +12,4 @@
 - Opened instances now use the same Java version the main instance is using.
 - Added the `/hotjoin instances abort <uuid>` command to disconnect any clients, which is useful if they are in a limbo state or aren't starting.
 - The limit for maximum instances has been raised from 2 to 4.
+- Fixed user selection screen opening when it definitely shouldn't.
