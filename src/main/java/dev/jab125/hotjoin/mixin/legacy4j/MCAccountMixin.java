@@ -4,6 +4,7 @@ import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 import dev.jab125.hotjoin.HotJoin;
 import dev.jab125.hotjoin.compat.legacy4j.Legacy4JModCompat;
+import dev.jab125.hotjoin.mixin.UserAccessor;
 import dev.jab125.hotjoin.util.AuthCallback;
 import dev.jab125.hotjoin.util.HotJoinCodecs;
 import net.minecraft.client.Minecraft;
@@ -43,7 +44,7 @@ public interface MCAccountMixin {
 			Tag tag = HotJoinCodecs.USER_CODEC.encodeStart(NbtOps.INSTANCE, user).resultOrPartial(HotJoin.LOGGER::error).orElseThrow();
 			ByteArrayDataOutput byteArrayDataOutput = ByteStreams.newDataOutput();
 			NbtIo.write((CompoundTag) tag, byteArrayDataOutput);
-			Legacy4JModCompat.authConsumer.accept(Base64.getEncoder().encodeToString(byteArrayDataOutput.toByteArray()));
+			Legacy4JModCompat.authConsumer.accept(((UserAccessor)user).getUUID().toString(), Base64.getEncoder().encodeToString(byteArrayDataOutput.toByteArray()));
 			Legacy4JModCompat.authConsumer = null;
 			ci.cancel();
 		}

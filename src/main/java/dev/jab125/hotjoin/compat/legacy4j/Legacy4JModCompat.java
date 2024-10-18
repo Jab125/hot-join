@@ -36,13 +36,14 @@ import java.nio.file.Path;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.UUID;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import static dev.jab125.hotjoin.HotJoin.crashgoByeBye;
 
 public class Legacy4JModCompat implements ILegacy4JModCompat {
 	// used by MCAccountMixin due to the lack of mutable static fields in interfaces
-	public static Consumer<String> authConsumer;
+	public static BiConsumer<String, String> authConsumer;
 	public static final HashMap<UUID, Legacy4JData> uuidLegacy4JMap = new HashMap<>();
 	public Legacy4JModCompat() {
 		ScreenEvents.AFTER_INIT.register((client, screen, scaledWidth, scaledHeight) -> {
@@ -69,16 +70,16 @@ public class Legacy4JModCompat implements ILegacy4JModCompat {
 	public static void openLegacy4JUserPicker(Legacy4JData data) {
 		if (data != null) ScreenUtil.getLegacyOptions().selectedController().set(data.controllerIndex());
 		ChooseUserScreen chooseUserScreen = new ChooseUserScreen(null);
-		((AuthCallback)chooseUserScreen).hotjoin$authResponse(s -> {
+		((AuthCallback)chooseUserScreen).hotjoin$authResponse((uuid, s) -> {
 			Minecraft.getInstance().getToasts().addToast(new LegacyTip(Component.literal("Success, joining world...")));
-			launchLegacy4jClient(s, data);
+			launchLegacy4jClient(s, data, uuid);
 		});
 		((AuthCallback) chooseUserScreen).hotjoin$legacy4jData(data);
 		Minecraft.getInstance().setScreen(chooseUserScreen);
 	}
 
 	@SuppressWarnings("unchecked")
-	private static <T extends Throwable> void launchLegacy4jClient(String magic, Legacy4JData legacy4JData) throws T {
+	private static <T extends Throwable> void launchLegacy4jClient(String magic, Legacy4JData legacy4JData, String _uuid) throws T {
 		String data;
 		if (legacy4JData != null) {
 			Tag tag = Legacy4JData.CODEC.encodeStart(NbtOps.INSTANCE, legacy4JData).resultOrPartial(HotJoin.LOGGER::error).orElseThrow();
@@ -92,7 +93,7 @@ public class Legacy4JModCompat implements ILegacy4JModCompat {
 		} else {
 			data = null;
 		}
-		UUID uuid = HotJoinAccess.launchMinecraftClient("legacy4j", magic, data);
+		UUID uuid = HotJoinAccess.launchMinecraftClient("legacy4j", magic, data, _uuid);
 		if (legacy4JData != null) uuidLegacy4JMap.put(uuid, legacy4JData);
 	}
 

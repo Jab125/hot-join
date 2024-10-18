@@ -23,6 +23,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.server.IntegratedServer;
 import org.apache.commons.io.file.PathUtils;
 import org.apache.commons.lang3.ArrayUtils;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import wily.legacy.client.screen.Assort;
@@ -337,7 +338,7 @@ public class HotJoin {
 	static int hotJoin(CommandContext<FabricClientCommandSource> a) {
 		HotJoin.canLaunchOtherwiseThrow();
 		try {
-			launchMinecraftClient(null, null, null);
+			launchMinecraftClient(null, null, null, null);
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
@@ -345,8 +346,9 @@ public class HotJoin {
 	}
 
 	// The goal is to launch Minecraft a second time, under a different directory.
-	public static UUID launchMinecraftClient(String compat, String magic, String legacy4jData) throws IOException {
+	public static UUID launchMinecraftClient(String compat, String magic, String legacy4jData, @Nullable String folderName) throws IOException {
 		HotJoin.canLaunchOtherwiseThrow();
+		if (folderName == null || folderName.isBlank()) folderName = "second";
 		if (magic != null) magic = magic.replace("=", "$");
 		if (legacy4jData != null) legacy4jData = legacy4jData.replace("=", "$");
 		UUID uuid = UUID.randomUUID();
@@ -362,9 +364,10 @@ public class HotJoin {
 			}
 			i++;
 		}
-		Path path = Path.of("second");
-		path.toFile().mkdirs();
-		transfer(path);
+		Path path = Path.of(".hotjoin-instances/" + folderName);
+		boolean directory = path.toFile().isDirectory();
+		if (!directory) path.toFile().mkdirs();
+		if (!directory) transfer(path);
 		launchArguments[i + 1] = path.toAbsolutePath().toString();
 		String cp = System.getProperty("java.class.path");
 		List<String> splitClassPath = Arrays.stream(cp.split(File.pathSeparator)).toList();

@@ -1,11 +1,11 @@
 package dev.jab125.hotjoin.util;
 
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 
 public interface AuthCallback {
-	void hotjoin$authResponse(Consumer<String> authConsumer);
+	void hotjoin$authResponse(BiConsumer<String /*uuid*/, String /*magic*/> authConsumer);
 
-	Consumer<String> hotjoin$authResponse();
+	BiConsumer<String, String> hotjoin$authResponse();
 
 	@SuppressWarnings("UnnecessaryReturnStatement")
 	default void hotjoin$legacy4jData(Object object) {

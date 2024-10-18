@@ -2,27 +2,17 @@ package dev.jab125.hotjoin.mixin.legacy4j;
 
 import dev.jab125.hotjoin.compat.legacy4j.Legacy4JData;
 import dev.jab125.hotjoin.util.AuthCallback;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.Renderable;
-import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import wily.legacy.client.screen.ChooseUserScreen;
-import wily.legacy.client.screen.Panel;
 import wily.legacy.client.screen.PanelVListScreen;
-import wily.legacy.client.screen.RenderableVListScreen;
 
-import java.util.function.Consumer;
-import java.util.function.Function;
+import java.util.function.BiConsumer;
 
 @Mixin(ChooseUserScreen.class)
 public abstract class ChooseUserScreenMixin extends PanelVListScreen implements AuthCallback {
-	private @Unique @Nullable Consumer<String> authResponse;
+	private @Unique @Nullable BiConsumer<String, String> authResponse;
 
 	@SuppressWarnings("DataFlowIssue")
 	public ChooseUserScreenMixin() {
@@ -30,12 +20,12 @@ public abstract class ChooseUserScreenMixin extends PanelVListScreen implements 
 	}
 
 	@Override
-	public void hotjoin$authResponse(Consumer<String> authConsumer) {
+	public void hotjoin$authResponse(BiConsumer<String, String> authConsumer) {
 		this.authResponse = authConsumer;
 	}
 
 	@Override
-	public Consumer<String> hotjoin$authResponse() {
+	public BiConsumer<String, String> hotjoin$authResponse() {
 		return this.authResponse;
 	}
 

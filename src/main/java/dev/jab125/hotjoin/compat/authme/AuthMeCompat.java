@@ -22,8 +22,8 @@ public class AuthMeCompat implements IAuthMeModCompat {
 		return 0;
 	}
 
-	private static void launchAuthMeClient(String magic) {
-		HotJoinAccess.launchMinecraftClient("authme", magic);
+	private static void launchAuthMeClient(String uuid, String magic) {
+		HotJoinAccess.launchMinecraftClient("authme", magic, null, uuid);
 	}
 
 	@Override
