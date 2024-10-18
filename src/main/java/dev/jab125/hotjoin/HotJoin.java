@@ -237,7 +237,8 @@ public class HotJoin {
 
 			@Override
 			public void capFPS(int maxFps) {
-				this.maxFps = maxFps;
+				// TODO config
+				// this.maxFps = maxFps;
 			}
 
 			@Override
