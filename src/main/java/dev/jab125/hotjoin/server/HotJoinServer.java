@@ -60,7 +60,7 @@ public class HotJoinServer {
 	public static void main(String[] args) throws IOException, InterruptedException {
 		System.out.println("Started");
 		HotJoinServer server = new HotJoinServer();
-		server.start(4444);
+		server.start(4447);
 	}
 
 	static final HashMap<CustomPacketPayload.Type<?>, TriConsumer<HotJoinS2CThread, ?, UUID>> handlers = new HashMap<>();

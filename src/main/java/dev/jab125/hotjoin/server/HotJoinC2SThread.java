@@ -30,7 +30,7 @@ public class HotJoinC2SThread extends Thread {
 	private void run0() throws Throwable {
 		client = new HotJoinClient();
 		System.out.println("Started");
-		client.startConnection("127.0.0.1", 4444);
+		client.startConnection("127.0.0.1", 4447);
 		new Thread(() -> {
 			while (true) {
 				for (Consumer<HotJoinC2SThread> runnable : runnables) {
