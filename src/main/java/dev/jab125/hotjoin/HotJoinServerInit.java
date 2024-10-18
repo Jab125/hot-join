@@ -1,22 +1,33 @@
 package dev.jab125.hotjoin;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.brigadier.Command;
+import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.brigadier.suggestion.SuggestionProvider;
+import com.mojang.brigadier.suggestion.Suggestions;
+import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import dev.jab125.hotjoin.client.Screenshot;
 import dev.jab125.hotjoin.packet.*;
 import dev.jab125.hotjoin.server.HotJoinClient;
+import dev.jab125.hotjoin.server.HotJoinS2CThread;
 import dev.jab125.hotjoin.server.HotJoinServer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
+import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 
 import java.io.IOException;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 import static dev.jab125.hotjoin.HotJoin.*;
 
@@ -37,6 +48,25 @@ public class HotJoinServerInit {
 
 			if (FabricLoader.getInstance().isModLoaded("legacy")) {
 				command.then(ClientCommandManager.literal("legacy4j").executes(legacy4JModCompat::hotJoinLegacy4J));
+			}
+
+			{
+				command.then(ClientCommandManager.literal("instances").then(ClientCommandManager.literal("abort").then(ClientCommandManager.argument("uuid", StringArgumentType.word()).suggests((context, builder) -> {
+					for (UUID instance : INSTANCES) {
+						builder = builder.suggest(instance.toString(), Component.literal("Connected: " + uuidPlayerMap.containsKey(instance)));
+					}
+					return builder.buildFuture();
+				}).executes(context -> {
+					String string = StringArgumentType.getString(context, "uuid");
+					UUID o = UUID.fromString(string);
+					boolean d = INSTANCES.remove(o);
+					HotJoinS2CThread remove = uuidPlayerMap.remove(o);
+					boolean v = remove != null;
+					if (v) remove.disconnect();
+					if (legacy4JModCompat != null) legacy4JModCompat.leftWorld(o);
+					arrangeWindows();
+					return (d ? 1 : 0) + (v ? 1 : 0);
+				}))));
 			}
 
 			if (FabricLoader.getInstance().isDevelopmentEnvironment()) {

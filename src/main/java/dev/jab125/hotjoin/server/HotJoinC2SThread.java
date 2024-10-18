@@ -41,40 +41,45 @@ public class HotJoinC2SThread extends Thread {
 		}).start();
 		int i = 0;
 		FriendlyByteBuf bup = null;
-		while (true) {
-			byte read = (byte) client.in.read();
-			if (read == -1) break;
-			if (bup == null) {
-				if (read == Constants.MAGIC_START[i]) {
-					i++;
+		try {
+			while (true) {
+				byte read = (byte) client.in.read();
+				if (read == -1) break;
+				if (bup == null) {
+					if (read == Constants.MAGIC_START[i]) {
+						i++;
+					} else {
+						i = 0;
+					}
+					if (i == Constants.MAGIC_START.length) {
+						bup = PacketByteBufs.create();
+						i = 0;
+					}
 				} else {
-					i = 0;
-				}
-				if (i == Constants.MAGIC_START.length) {
-					bup = PacketByteBufs.create();
-					i = 0;
-				}
-			} else {
-				bup = bup.writeByte(read);
-				if (read == Constants.MAGIC_END[i]) {
-					i++;
-				} else {
-					i = 0;
-				}
+					bup = bup.writeByte(read);
+					if (read == Constants.MAGIC_END[i]) {
+						i++;
+					} else {
+						i = 0;
+					}
 
-				if (i == Constants.MAGIC_END.length) {
-					ResourceLocation resourceLocation = bup.readResourceLocation();
-					Map.Entry<CustomPacketPayload.Type<?>, StreamCodec<FriendlyByteBuf, ?>> typeStreamCodecEntry = PayloadRegistry.REGS.entrySet().stream().filter(a -> a.getKey().id().equals(resourceLocation)).findFirst().orElseThrow();
-					StreamCodec<FriendlyByteBuf, ?> value = typeStreamCodecEntry.getValue();
-					Object decode = value.decode(bup);
-					// noinspection unchecked
-					((Consumer) handlers.get(typeStreamCodecEntry.getKey())).accept(decode);
-					bup = null;
-					i = 0;
+					if (i == Constants.MAGIC_END.length) {
+						ResourceLocation resourceLocation = bup.readResourceLocation();
+						Map.Entry<CustomPacketPayload.Type<?>, StreamCodec<FriendlyByteBuf, ?>> typeStreamCodecEntry = PayloadRegistry.REGS.entrySet().stream().filter(a -> a.getKey().id().equals(resourceLocation)).findFirst().orElseThrow();
+						StreamCodec<FriendlyByteBuf, ?> value = typeStreamCodecEntry.getValue();
+						Object decode = value.decode(bup);
+						// noinspection unchecked
+						((Consumer) handlers.get(typeStreamCodecEntry.getKey())).accept(decode);
+						bup = null;
+						i = 0;
+					}
 				}
 			}
+		} catch (Throwable t) {
+			t.printStackTrace();
 		}
-		//client.stopConnection();
+		System.out.println("Connection has halted.");
+		client.stopConnection();
 	}
 
 	CopyOnWriteArrayList<Consumer<HotJoinC2SThread>> runnables = new CopyOnWriteArrayList<>();

@@ -42,7 +42,14 @@ public class HotJoinS2CThread extends Thread {
 	public void run() {
 		new Thread(() -> {
 			while (true) {
-				if (this.shouldDisconnect) return;
+				if (this.shouldDisconnect) {
+					try {
+						socket.close();
+					} catch (IOException e) {
+						throw new RuntimeException(e);
+					}
+					return;
+				}
 				for (Consumer<HotJoinS2CThread> runnable : runnables) {
 					runnable.accept(this);
 					runnables.remove(runnable);

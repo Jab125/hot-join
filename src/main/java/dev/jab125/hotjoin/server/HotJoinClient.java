@@ -5,6 +5,7 @@ import dev.jab125.hotjoin.packet.SteamPayload;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
+import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
@@ -41,6 +42,7 @@ public class HotJoinClient {
 		in.close();
 		out.close();
 		clientSocket.close();
+		Minecraft.getInstance().tell(() -> Minecraft.getInstance().stop());
 	}
 
 	static final HashMap<CustomPacketPayload.Type<?>, Consumer<?>> handlers = new HashMap<>();
