@@ -38,7 +38,7 @@ public class GameRendererMixin {
 //		//matrix4fStack.translation(0.0F, 0.0F, -11000.0F);
 //		RenderSystem.applyModelViewMatrix();
 		GuiGraphics graphics = new GuiGraphics(minecraft, this.renderBuffers.bufferSource());
-		HotJoin.legacy4JModCompat.renderUsername(graphics);
+		if (HotJoin.legacy4JModCompat != null) HotJoin.legacy4JModCompat.renderUsername(graphics);
 		SharedRendering.render0(graphics);
 		//matrix4fStack.popMatrix();
 	}
