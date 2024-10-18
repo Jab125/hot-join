@@ -25,6 +25,7 @@ import net.minecraft.network.chat.Component;
 import wily.legacy.client.LegacyOptions;
 import wily.legacy.client.LegacyTip;
 import wily.legacy.client.controller.SDLControllerHandler;
+import wily.legacy.client.screen.Assort;
 import wily.legacy.client.screen.ChooseUserScreen;
 import wily.legacy.client.screen.ConfirmationScreen;
 import wily.legacy.util.MCAccount;
@@ -160,5 +161,10 @@ public class Legacy4JModCompat implements ILegacy4JModCompat {
 				if (o != null) ScreenUtil.getLegacyOptions().selectedController().set(o.oldControllerIndex());
 			}
 		}
+	}
+
+	@Override
+	public void saveAssorts() {
+		Assort.save();
 	}
 }

@@ -28,8 +28,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import wily.legacy.client.screen.Assort;
-import wily.legacy.util.ScreenUtil;
 
 import java.io.File;
 import java.io.IOException;
@@ -429,7 +427,7 @@ public class HotJoin {
 		PathTransfer pathTransfer = getPathTransfer(second);
 		try {
 			Minecraft.getInstance().options.save();
-			Assort.save();
+			if (legacy4JModCompat != null) legacy4JModCompat.saveAssorts();
 			pathTransfer.copyFile(Path.of("resource_assorts.json"));
 			pathTransfer.clearDirectoryRecursive(Path.of("resource_assorts"));
 			pathTransfer.copyFolderRecursive(Path.of("resource_assorts"));

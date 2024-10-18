@@ -23,4 +23,5 @@ public interface ILegacy4JModCompat extends IModCompat {
 	void receivedSdlNatives(SdlNativesPayload payload);
 	void renderUsername(GuiGraphics graphics);
 	void onBeginScreenSet(Screen previousScreen, Screen newScreen);
+	void saveAssorts();
 }
