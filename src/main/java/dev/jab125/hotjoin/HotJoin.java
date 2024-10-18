@@ -24,6 +24,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.server.IntegratedServer;
 import org.apache.commons.io.file.PathUtils;
 import org.apache.commons.lang3.ArrayUtils;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -425,6 +426,29 @@ public class HotJoin {
 
 	// Transfer stuff into this folder
 	private static void transfer(Path second) {
+		PathTransfer pathTransfer = getPathTransfer(second);
+		try {
+			Minecraft.getInstance().options.save();
+			Assort.save();
+			pathTransfer.copyFile(Path.of("resource_assorts.json"));
+			pathTransfer.clearDirectoryRecursive(Path.of("resource_assorts"));
+			pathTransfer.copyFolderRecursive(Path.of("resource_assorts"));
+			pathTransfer.clearDirectoryRecursive(Path.of("resourcepacks"));
+			pathTransfer.copyFolderRecursive(Path.of("resourcepacks"));
+
+			pathTransfer.clearDirectoryRecursive(Path.of("config"));
+			pathTransfer.copyFolderRecursive(Path.of("config"));
+
+			pathTransfer.clearDirectoryRecursive(Path.of("shaderpacks"));
+			pathTransfer.copyFolderRecursive(Path.of("shaderpacks"));
+
+			pathTransfer.copyFile(Path.of("options.txt"));
+		} catch (Throwable t) {
+
+		}
+	}
+
+	private static @NotNull PathTransfer getPathTransfer(Path second) {
 		Path gameDir = FabricLoader.getInstance().getGameDir();
 		PathTransfer pathTransfer = new PathTransfer() {
 
@@ -450,25 +474,7 @@ public class HotJoin {
 				PathUtils.copyDirectory(original, resolve);
 			}
 		};
-		try {
-			Minecraft.getInstance().options.save();
-			Assort.save();
-			pathTransfer.copyFile(Path.of("resource_assorts.json"));
-			pathTransfer.clearDirectoryRecursive(Path.of("resource_assorts"));
-			pathTransfer.copyFolderRecursive(Path.of("resource_assorts"));
-			pathTransfer.clearDirectoryRecursive(Path.of("resourcepacks"));
-			pathTransfer.copyFolderRecursive(Path.of("resourcepacks"));
-
-			pathTransfer.clearDirectoryRecursive(Path.of("config"));
-			pathTransfer.copyFolderRecursive(Path.of("config"));
-
-			pathTransfer.clearDirectoryRecursive(Path.of("shaderpacks"));
-			pathTransfer.copyFolderRecursive(Path.of("shaderpacks"));
-
-			pathTransfer.copyFile(Path.of("options.txt"));
-		} catch (Throwable t) {
-
-		}
+		return pathTransfer;
 	}
 
 	interface PathTransfer {
