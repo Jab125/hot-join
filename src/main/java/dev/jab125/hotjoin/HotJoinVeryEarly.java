@@ -45,7 +45,7 @@ public class HotJoinVeryEarly implements LanguageAdapter {
 				String[] range = entry.getValue().getType() == CustomValue.CvType.STRING ? new String[]{entry.getValue().getAsString()} : m(entry.getValue().getAsArray().getAsArray());
 				if (isModAvailable(id, range)) break l;
 			}
-			throw new FormattedException("Couldn't find of Hot-Join's dependencies", "Hot-Join requires Legacy4J or AuthMe");
+			throw new FormattedException("Couldn't find of Hot-Join's dependencies", "Hot-Join requires Legacy4J or Auth Me");
 		}
 	}
 
