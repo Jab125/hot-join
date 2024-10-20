@@ -23,6 +23,7 @@ public class HotJoinCommon {
 		PayloadRegistry.register(ScreenshotRequestPayload.TYPE, ScreenshotRequestPayload.STREAM_CODEC);
 		PayloadRegistry.register(ScreenshotC2SPayload.TYPE, ScreenshotC2SPayload.STREAM_CODEC);
 		PayloadRegistry.register(Legacy4JSdlNativesPayload.TYPE, Legacy4JSdlNativesPayload.STREAM_CODEC);
+		PayloadRegistry.register(ControlifyInfoPayload.TYPE, ControlifyInfoPayload.STREAM_CODEC);
 		initted = true;
 	}
 

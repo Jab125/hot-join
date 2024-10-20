@@ -5,10 +5,12 @@ import dev.jab125.hotjoin.compat.IModCompat;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.User;
 
+import java.util.UUID;
+
 public interface IAuthMeModCompat extends IModCompat {
 	// HotJoin Microsoft
 	int hotJoinAuthMeMicrosoft(CommandContext<FabricClientCommandSource> a);
-
 	@Override
 	void setSession(User user);
+	UUID launchAuthMeClient(String uuid, String magic);
 }

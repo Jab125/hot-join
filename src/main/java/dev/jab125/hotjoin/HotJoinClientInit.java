@@ -76,6 +76,10 @@ public class HotJoinClientInit {
 			});
 		});
 
+		HotJoinClient.registerPacketHandler(ControlifyInfoPayload.TYPE, payload -> {
+			controlifyModCompat.receivedControlifyPayload(payload);
+		});
+
 		HotJoinClientInit.hotJoinC2SThread = new HotJoinC2SThread();
 		hotJoinC2SThread.start();
 

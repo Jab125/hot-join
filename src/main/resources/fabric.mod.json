@@ -21,6 +21,9 @@
 		],
 		"fabric-datagen": [
 			"dev.jab125.hotjoin.HotJoinDataGenerator"
+		],
+		"controlify": [
+			"dev.jab125.hotjoin.compat.controlify.ControlifyEntrypoint"
 		]
 	},
 	"languageAdapters": {

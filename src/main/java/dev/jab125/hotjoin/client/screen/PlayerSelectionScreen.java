@@ -3,6 +3,16 @@ package dev.jab125.hotjoin.client.screen;
 import com.google.common.io.ByteStreams;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+/////// TODO TODO TODO TODO TODO TODO
+import dev.isxander.controlify.Controlify;
+import dev.isxander.controlify.api.ControlifyApi;
+import dev.isxander.controlify.controller.ControllerEntity;
+/////// TODO TODO TODO TODO TODO TODO
+import dev.jab125.hotjoin.HotJoin;
+import dev.jab125.hotjoin.compat.authme.AuthMeCompat;
+import dev.jab125.hotjoin.compat.controlify.ControlifyData;
+import dev.jab125.hotjoin.compat.controlify.ControlifyModCompat;
+import dev.jab125.hotjoin.mixin.UserAccessor;
 import dev.jab125.hotjoin.util.AuthCallback;
 import dev.jab125.hotjoin.util.HotJoinCodecs;
 import me.axieum.mcmod.authme.impl.gui.MicrosoftAuthScreen;
@@ -16,12 +26,14 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.chat.Component;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.UUID;
 
 import static dev.jab125.hotjoin.HotJoin.LOGGER;
 import static dev.jab125.hotjoin.HotJoin.crashgoByeBye;
@@ -29,13 +41,24 @@ import static dev.jab125.hotjoin.HotJoin.crashgoByeBye;
 // This class will probably be most of the MC version porting work
 public class PlayerSelectionScreen extends Screen {
 
+	private final @Nullable ControllerEntity controller;
+	private final ControllerEntity previousController;
 	private PlayerSelectionList playerSelectionList;
 	private Button join;
 	private Button addUser;
 	private List<String> players = new ArrayList<>();
 
-	public PlayerSelectionScreen() {
+	public PlayerSelectionScreen(@Nullable ControllerEntity controller) {
 		super(Component.empty());
+		this.controller = controller;
+		previousController = ControlifyApi.get().getCurrentController().orElse(null);
+		if (controller != null) Controlify.instance().setCurrentController(controller, true);
+	}
+
+	@Override
+	public void onClose() {
+		super.onClose();
+		if (controller != null) Controlify.instance().setCurrentController(previousController, true);
 	}
 
 	@Override
@@ -58,7 +81,13 @@ public class PlayerSelectionScreen extends Screen {
 		}).pos(this.width / 2 - 50 - 105, this.height - 25).size(100, 20).build();
 		addRenderableWidget(addUser);
 		join = Button.builder(Component.literal("Join"), b -> {
-
+			if (playerSelectionList.getSelected() == null) return;
+			PlayerSelectionList.Entry selected = playerSelectionList.getSelected();
+			String magic = selected.magic;
+			String uuid = selected.uuid;
+			UUID uuid1 = HotJoin.authMeCompat.launchAuthMeClient(uuid, magic);
+			ControlifyModCompat.uuidControlifyMap.put(uuid1, new ControlifyData(controller == null ? "" : controller.info().uid()));
+			this.onClose();
 		}).pos(this.width / 2 - 50, this.height - 25).size(100, 20).build();
 		addRenderableWidget(join);
 	}
@@ -119,9 +148,11 @@ public class PlayerSelectionScreen extends Screen {
 		static class Entry extends ObjectSelectionList.Entry<Entry> {
 			private final String magic;
 			private final String username;
+			private final String uuid;
 			public Entry(String magic) {
 				this.magic = magic;
 				this.username = HotJoinCodecs.USER_CODEC.decode(NbtOps.INSTANCE, crashgoByeBye(() -> NbtIo.read(ByteStreams.newDataInput(Base64.getDecoder().decode(magic.replace("$", "=")))))).resultOrPartial(LOGGER::error).orElseThrow().getFirst().getName();
+				this.uuid = ((UserAccessor) HotJoinCodecs.USER_CODEC.decode(NbtOps.INSTANCE, crashgoByeBye(() -> NbtIo.read(ByteStreams.newDataInput(Base64.getDecoder().decode(magic.replace("$", "=")))))).resultOrPartial(LOGGER::error).orElseThrow().getFirst()).getUUID().toString();
 			}
 			@Override
 			public Component getNarration() {

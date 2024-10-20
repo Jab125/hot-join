@@ -65,6 +65,7 @@ public class HotJoinServerInit {
 					boolean v = remove != null;
 					if (v) remove.disconnect();
 					if (legacy4JModCompat != null) legacy4JModCompat.leftWorld(o);
+					if (controlifyModCompat != null) controlifyModCompat.leftWorld(o);
 					arrangeWindows();
 					return (d ? 1 : 0) + (v ? 1 : 0);
 				}))));
@@ -100,6 +101,7 @@ public class HotJoinServerInit {
 				System.out.println("Disconnected.");
 			} else {
 				if (legacy4JModCompat != null) legacy4JModCompat.connectionEstablished(thread, payload, uuid);
+				if (controlifyModCompat != null) controlifyModCompat.connectionEstablished(thread, payload, uuid);
 			}
 		});
 
@@ -113,6 +115,7 @@ public class HotJoinServerInit {
 			INSTANCES.remove(uuid);
 			uuidPlayerMap.remove(uuid);
 			if (legacy4JModCompat != null) legacy4JModCompat.leftWorld(uuid);
+			if (controlifyModCompat != null) controlifyModCompat.leftWorld(uuid);
 			arrangeWindows();
 		});
 
@@ -140,9 +143,9 @@ public class HotJoinServerInit {
 				boolean v = remove != null;
 				if (v) remove.disconnect();
 				if (legacy4JModCompat != null) legacy4JModCompat.leftWorld(instance);
-
+				if (controlifyModCompat != null) controlifyModCompat.leftWorld(instance);
 			}
-			
+
 			arrangeWindows();
 		});
 	}
