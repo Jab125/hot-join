@@ -23,7 +23,7 @@ public class ControllerManagerMixin {
 	@Inject(method = "run", at = @At("HEAD"), remap = false)
 	void interceptRun(CallbackInfo ci) {
 		if (!HotJoin.canLaunchAnotherClient()) return;
-		if (!(Minecraft.getInstance().level != null || Minecraft.getInstance().getSingleplayerServer() != null || Minecraft.getInstance().screen != null)) return;
+		if (!(Minecraft.getInstance().level != null || (Minecraft.getInstance().getSingleplayerServer() != null || Minecraft.getInstance().getCurrentServer() != null) || Minecraft.getInstance().screen != null)) return;
 		Controller.Handler handler = ControllerManager.getHandler();
 		// this goes from 0 to 15
 		//handler.getController()
@@ -60,7 +60,7 @@ public class ControllerManagerMixin {
 						}
 					} else if (handler instanceof SDLControllerHandler handler1) {
 						if (controller.buttonPressed(ControllerManager.getHandler().getBindingIndex(ControllerBinding.START))) {
-							if (Minecraft.getInstance().level != null && Minecraft.getInstance().getSingleplayerServer() != null && Minecraft.getInstance().screen == null) {
+							if (Minecraft.getInstance().level != null && (Minecraft.getInstance().getSingleplayerServer() != null || Minecraft.getInstance().getCurrentServer() != null) && Minecraft.getInstance().screen == null) {
 								// we are in a world, and we own it, and there is no screen open.
 								int finalI = i;
 								Minecraft.getInstance().tell(() -> {
