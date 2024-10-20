@@ -455,6 +455,9 @@ public class HotJoin {
 			pathTransfer.clearDirectoryRecursive(Path.of("config"));
 			pathTransfer.copyFolderRecursive(Path.of("config"));
 
+			pathTransfer.clearDirectoryRecursive(Path.of("defaultconfigs"));
+			pathTransfer.copyFolderRecursive(Path.of("defaultconfigs"));
+
 			pathTransfer.clearDirectoryRecursive(Path.of("shaderpacks"));
 			pathTransfer.copyFolderRecursive(Path.of("shaderpacks"));
 
