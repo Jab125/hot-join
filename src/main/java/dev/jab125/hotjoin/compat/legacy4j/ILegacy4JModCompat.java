@@ -3,7 +3,7 @@ package dev.jab125.hotjoin.compat.legacy4j;
 import com.mojang.brigadier.context.CommandContext;
 import dev.jab125.hotjoin.compat.IModCompat;
 import dev.jab125.hotjoin.packet.AlohaPayload;
-import dev.jab125.hotjoin.packet.SdlNativesPayload;
+import dev.jab125.hotjoin.packet.Legacy4JSdlNativesPayload;
 import dev.jab125.hotjoin.server.HotJoinS2CThread;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.client.User;
@@ -20,7 +20,7 @@ public interface ILegacy4JModCompat extends IModCompat {
 	void joinedWorld();
 	void leftWorld(UUID uuid);
 	void connectionEstablished(HotJoinS2CThread thread, AlohaPayload payload, UUID uuid);
-	void receivedSdlNatives(SdlNativesPayload payload);
+	void receivedSdlNatives(Legacy4JSdlNativesPayload payload);
 	void renderUsername(GuiGraphics graphics);
 	void onBeginScreenSet(Screen previousScreen, Screen newScreen);
 	void saveAssorts();

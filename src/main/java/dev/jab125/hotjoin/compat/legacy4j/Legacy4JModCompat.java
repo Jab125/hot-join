@@ -6,7 +6,7 @@ import com.mojang.brigadier.context.CommandContext;
 import dev.jab125.hotjoin.HotJoin;
 import dev.jab125.hotjoin.api.HotJoinAccess;
 import dev.jab125.hotjoin.packet.AlohaPayload;
-import dev.jab125.hotjoin.packet.SdlNativesPayload;
+import dev.jab125.hotjoin.packet.Legacy4JSdlNativesPayload;
 import dev.jab125.hotjoin.server.HotJoinS2CThread;
 import dev.jab125.hotjoin.util.AuthCallback;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
@@ -38,7 +38,6 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.UUID;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
 import static dev.jab125.hotjoin.HotJoin.crashgoByeBye;
 
@@ -131,12 +130,12 @@ public class Legacy4JModCompat implements ILegacy4JModCompat {
 	public void connectionEstablished(HotJoinS2CThread thread, AlohaPayload payload, UUID uuid) {
 		if (2 == ScreenUtil.getLegacyOptions().selectedControllerHandler().get()) {
 			File nativesFile = SDLControllerHandler.nativesFile;
-			thread.runTask(t -> t.send(new SdlNativesPayload(nativesFile.toPath().toAbsolutePath())));
+			thread.runTask(t -> t.send(new Legacy4JSdlNativesPayload(nativesFile.toPath().toAbsolutePath())));
 		}
 	}
 
 	@Override
-	public void receivedSdlNatives(SdlNativesPayload payload) {
+	public void receivedSdlNatives(Legacy4JSdlNativesPayload payload) {
 		Path path = payload.path();
 		SDLControllerHandler.nativesFile = path.toFile();
 	}

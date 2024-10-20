@@ -8,11 +8,9 @@ import dev.jab125.hotjoin.packet.*;
 import dev.jab125.hotjoin.server.HotJoinC2SThread;
 import dev.jab125.hotjoin.server.HotJoinClient;
 import dev.jab125.hotjoin.util.HotJoinCodecs;
-import net.deechael.concentration.Concentration;
 import net.deechael.concentration.fabric.config.ConcentrationConfigFabric;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.AccessibilityOnboardingScreen;
@@ -72,7 +70,7 @@ public class HotJoinClientInit {
 			});
 		});
 
-		HotJoinClient.registerPacketHandler(SdlNativesPayload.TYPE, payload -> {
+		HotJoinClient.registerPacketHandler(Legacy4JSdlNativesPayload.TYPE, payload -> {
 			Minecraft.getInstance().execute(() -> {
 				legacy4JModCompat.receivedSdlNatives(payload);
 			});
