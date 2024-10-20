@@ -14,6 +14,8 @@ public class ControlifyEntrypoint implements dev.isxander.controlify.api.entrypo
 		Optional<ControllerEntity> first = Controlify.instance().getControllerManager().orElseThrow().getConnectedControllers().stream().filter(a -> Objects.equals(data.uid(), a.info().uid())).findFirst();
 		if (first.isPresent()) {
 			Controlify.instance().setCurrentController(first.get(), true);
+			Controlify.instance().config().globalSettings().outOfFocusInput = true;
+			Controlify.instance().config().save();
 		}
 	}
 }
