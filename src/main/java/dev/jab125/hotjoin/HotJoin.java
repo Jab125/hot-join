@@ -21,6 +21,7 @@ import net.fabricmc.loader.api.ModContainer;
 import net.fabricmc.loader.api.metadata.ModOrigin;
 import net.fabricmc.loader.impl.util.LoaderUtil;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.server.IntegratedServer;
 import org.apache.commons.io.file.PathUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -355,9 +356,17 @@ public class HotJoin {
 		if (legacy4jData != null) legacy4jData = legacy4jData.replace("=", "$");
 		UUID uuid = UUID.randomUUID();
 		INSTANCES.add(uuid);
+		String server;
 		IntegratedServer singleplayerServer = Minecraft.getInstance().getSingleplayerServer();
-		assert singleplayerServer != null;
-		singleplayerServer.publishServer(singleplayerServer.getDefaultGameType(), singleplayerServer.getPlayerList().isAllowCommandsForAllPlayers(), 3600);
+		if (singleplayerServer != null) {
+			singleplayerServer.publishServer(singleplayerServer.getDefaultGameType(), singleplayerServer.getPlayerList().isAllowCommandsForAllPlayers(), 3600);
+			server = "localhost:" + singleplayerServer.getPort();
+		} else {
+			ServerData currentServer = Minecraft.getInstance().getCurrentServer();
+			assert currentServer != null;
+			server = currentServer.ip;
+		}
+
 		String[] launchArguments = FabricLoader.getInstance().getLaunchArguments(false);
 		int i = 0;
 		for (String launchArgument : launchArguments) {
@@ -406,7 +415,7 @@ public class HotJoin {
 		if (Minecraft.ON_OSX) l = ArrayUtils.addAll(l, "-XstartOnFirstThread");
 		if (!System.getProperty("fabric.classPathGroups", "").isEmpty()) l = ArrayUtils.addAll(l, "-Dfabric.classPathGroups=" + System.getProperty("fabric.classPathGroups"));
 		if (!System.getProperty("fabric.remapClasspathFile", "").isEmpty()) l = ArrayUtils.addAll(l, "-Dfabric.remapClasspathFile=" + System.getProperty("fabric.remapClasspathFile"));
-		l = ArrayUtils.addAll(l, "-Dhotjoin.client=true", "-Dhotjoin.server=localhost:" + singleplayerServer.getPort(), addMods);
+		l = ArrayUtils.addAll(l, "-Dhotjoin.client=true", "-Dhotjoin.server=" + server, addMods);
 		l = ArrayUtils.addAll(l,
 				"-Dhotjoin.uuid=" + uuid
 		);

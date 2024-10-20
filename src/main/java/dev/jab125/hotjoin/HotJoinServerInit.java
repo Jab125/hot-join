@@ -17,6 +17,7 @@ import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.loader.api.FabricLoader;
@@ -131,6 +132,18 @@ public class HotJoinServerInit {
 
 		ClientLifecycleEvents.CLIENT_STARTED.register(a -> {
 			HotJoin.arrangeWindows();
+		});
+
+		ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
+			for (UUID instance : INSTANCES) {
+				HotJoinS2CThread remove = uuidPlayerMap.remove(instance);
+				boolean v = remove != null;
+				if (v) remove.disconnect();
+				if (legacy4JModCompat != null) legacy4JModCompat.leftWorld(instance);
+
+			}
+			
+			arrangeWindows();
 		});
 	}
 }
