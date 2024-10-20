@@ -43,7 +43,7 @@ public abstract class MicrosoftAuthScreenMixin extends AuthScreen implements Aut
 			ci.cancel();
 			return;
 		} catch (Throwable t) {
-			HotJoin.LOGGER.info("Error authenticating via {}!", FabricLoader.getInstance().getModContainer("authme").orElseThrow().getMetadata().getName());
+			HotJoin.LOGGER.error("Error authenticating via {}!", FabricLoader.getInstance().getModContainer("authme").orElseThrow().getMetadata().getName(), t);
 		}
 		ci.cancel();
 	}

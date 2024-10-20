@@ -8,4 +8,6 @@ public sealed interface IControlifyModCompat extends IModCompat permits Controli
 	default void setSession(User user) {
 		throw new IllegalStateException("This shouldn't be called!");
 	}
+
+	void init();
 }

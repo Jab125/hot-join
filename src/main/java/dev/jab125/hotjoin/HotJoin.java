@@ -6,6 +6,8 @@ import com.mojang.brigadier.context.CommandContext;
 import dev.jab125.hotjoin.client.render.SharedRendering;
 import dev.jab125.hotjoin.compat.authme.IAuthMeModCompat;
 import dev.jab125.hotjoin.compat.authme.AuthMeCompat;
+import dev.jab125.hotjoin.compat.controlify.ControlifyModCompat;
+import dev.jab125.hotjoin.compat.controlify.IControlifyModCompat;
 import dev.jab125.hotjoin.compat.legacy4j.ILegacy4JModCompat;
 import dev.jab125.hotjoin.compat.legacy4j.Legacy4JModCompat;
 import dev.jab125.hotjoin.packet.SteamPayload;
@@ -51,6 +53,7 @@ public class HotJoin {
 	public static final HashMap<UUID, HotJoinS2CThread> uuidPlayerMap = new HashMap<>();
 	public static IAuthMeModCompat authMeCompat;
 	public static ILegacy4JModCompat legacy4JModCompat;
+	public static IControlifyModCompat controlifyModCompat;
 
 	private Wrapped wrapped = null;
 	public static boolean hotjoinClient;
@@ -81,6 +84,12 @@ public class HotJoin {
 			legacy4JModCompat = new Legacy4JModCompat();
 		} else {
 			legacy4JModCompat = null;
+		}
+		if (FabricLoader.getInstance().isModLoaded("controlify")) {
+			controlifyModCompat = new ControlifyModCompat();
+			controlifyModCompat.init();
+		} else {
+			controlifyModCompat = null;
 		}
 
 		if (hotjoinClient) {
