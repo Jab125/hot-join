@@ -384,8 +384,11 @@ public class HotJoin {
 			}
 			i++;
 		}
-		Path path = Path.of(".hotjoin-instances/" + folderName);
+		Path path = FabricLoader.getInstance().getGameDir().resolve(".hotjoin-instances/" + folderName).toAbsolutePath();
+		System.out.println("A " + path);
 		boolean directory = path.toFile().isDirectory();
+		System.out.println(directory);
+		System.out.println(path.toFile().exists());
 		if (!directory) path.toFile().mkdirs();
 		if (!directory) transfer(path);
 		launchArguments[i + 1] = path.toAbsolutePath().toString();
@@ -462,8 +465,12 @@ public class HotJoin {
 			pathTransfer.copyFolderRecursive(Path.of("shaderpacks"));
 
 			pathTransfer.copyFile(Path.of("options.txt"));
+			if (controlifyModCompat != null) {
+				pathTransfer.clearDirectoryRecursive(Path.of("controlify-natives"));
+				pathTransfer.copyFolderRecursive(Path.of("controlify-natives"));
+			}
 		} catch (Throwable t) {
-
+			t.printStackTrace();
 		}
 	}
 
@@ -474,22 +481,25 @@ public class HotJoin {
 			@Override
 			public void clearDirectoryRecursive(Path path) throws IOException {
 				Path resolve = second.resolve(path);
+				if (!resolve.toFile().isDirectory()) return;
 				PathUtils.deleteDirectory(resolve);
 			}
 
 			@Override
 			public void copyFile(Path path) throws IOException {
-				Path original = gameDir.resolve(path);
+				Path original = gameDir.resolve(path).toAbsolutePath();
 				if (!original.toFile().isFile()) return;
-				Path resolve = second.resolve(path);
+				Path resolve = second.resolve(path).toAbsolutePath();
 				Files.copy(original, resolve, StandardCopyOption.REPLACE_EXISTING);
 			}
 
 			@Override
 			public void copyFolderRecursive(Path path) throws IOException {
-				Path original = gameDir.resolve(path);
+				Path original = gameDir.resolve(path).toAbsolutePath();
+				System.out.println(original.toAbsolutePath());
 				if (!original.toFile().isDirectory()) return;
-				Path resolve = second.resolve(path);
+				Path resolve = second.resolve(path).toAbsolutePath();
+				System.out.println(resolve.toAbsolutePath());
 				PathUtils.copyDirectory(original, resolve);
 			}
 		};
