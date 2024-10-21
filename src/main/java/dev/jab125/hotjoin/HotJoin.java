@@ -169,7 +169,7 @@ public class HotJoin {
 			wrapped = wrappeds.get(2);
 			wrapped.x(0);
 			wrapped.y(height / 2);
-			wrapped.width(width);
+			wrapped.width(width / 2);
 			wrapped.height(height / 2);
 			wrapped.apply();
 		} else if (wrappeds.size() == 4) {
