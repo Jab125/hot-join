@@ -1,5 +1,8 @@
 package dev.jab125.hotjoin;
 
+import com.mojang.blaze3d.platform.Monitor;
+import com.mojang.blaze3d.platform.VideoMode;
+import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.StringArgumentType;
@@ -21,19 +24,61 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import org.lwjgl.glfw.GLFW;
 
 import java.io.IOException;
+import java.nio.IntBuffer;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 import static dev.jab125.hotjoin.HotJoin.*;
+import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.system.MemoryUtil.NULL;
 
 public class HotJoinServerInit {
 	public static void init() {
+		{
+			ClientLifecycleEvents.CLIENT_STARTED.register(client -> {
+				new Thread(() -> {
+					long ll = System.currentTimeMillis();
+					//noinspection StatementWithEmptyBody
+					while (System.currentTimeMillis() - ll < 500) ;
+					RenderSystem.recordRenderCall(() -> {
+						glfwDefaultWindowHints();
+						glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
+						glfwWindowHint(GLFW_CONTEXT_CREATION_API, GLFW_NATIVE_CONTEXT_API);
+						glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+						glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+						glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+						glfwWindowHint(GLFW_DECORATED, 0);
+						glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, 1);
+						glfwWindowHint(GLFW_FOCUSED, 0);
+						glfwWindowHint(GLFW_POSITION_X, 0);
+						glfwWindowHint(GLFW_POSITION_Y, 0);
+						//glfwWindowHint(WIDTH);
+
+						Window window2 = Minecraft.getInstance().getWindow();
+						long window1 = window2.getWindow();
+						long l = glfwGetPrimaryMonitor();
+
+						Monitor bestMonitor = window2.findBestMonitor();
+						VideoMode currentMode = bestMonitor.getCurrentMode();
+
+
+						/* GLFWWindow * */
+						long window = glfwCreateWindow(currentMode.getWidth(), currentMode.getHeight(), "YOLO", NULL, window1);
+						glfwMakeContextCurrent(window);
+						glfwMakeContextCurrent(window1);
+						glfwFocusWindow(window1);
+					});
+				}).start();
+			});
+		}
 		new Thread(() -> {
 			try {
 				HotJoinServer.main(null);
