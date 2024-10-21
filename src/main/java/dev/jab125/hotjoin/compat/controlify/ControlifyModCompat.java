@@ -67,7 +67,8 @@ public final class ControlifyModCompat implements IControlifyModCompat {
 
 	@Override
 	public void connectionEstablished(HotJoinS2CThread thread, AlohaPayload payload, UUID uuid) {
-		thread.runTask(t -> t.send(new ControlifyInfoPayload(uuidControlifyMap.get(payload.uuid()))));
+		ControlifyData controlifyData = uuidControlifyMap.get(payload.uuid());
+		if (controlifyData != null) thread.runTask(t -> t.send(new ControlifyInfoPayload(controlifyData)));
 	}
 
 	@Override
