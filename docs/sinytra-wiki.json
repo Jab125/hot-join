@@ -1,5 +1,9 @@
 {
   "id": "hotjoin",
   "platform": "modrinth",
-  "slug": "hotjoin"
+  "slug": "hotjoin",
+  "versions": {
+    "0.4": "377bcd41a5536f89d42a21227b4993c6c04ebb25",
+    "0.5": "develop"
+  }
 }

@@ -1,7 +1,7 @@
 plugins {
 	id 'fabric-loom' version '1.7-SNAPSHOT'
 	id 'maven-publish'
-	// id 'org.sinytra.wiki.toolkit' version '0.0.999990'
+	id 'org.moddedmc.wiki.toolkit' version '0.2.4'
 }
 
 version = project.mod_version
@@ -39,16 +39,15 @@ repositories {
 }
 
 // for moddedmc.org
-// TODO uncomment when WikiToolkit#1 is merged
-//wiki {
-//	docs {
-//		// The name of the object (examplemod) should match the registered wiki project ID (if it exists).
-//		hotjoin {
-//			// The path to the folder containing the documentation metadata file (sinytra-wiki.json)
-//			root = file('docs')
-//		}
-//	}
-//}
+wiki {
+	docs {
+		// The name of the object (examplemod) should match the registered wiki project ID (if it exists).
+		hotjoin {
+			// The path to the folder containing the documentation metadata file (sinytra-wiki.json)
+			root = file('docs')
+		}
+	}
+}
 
 fabricApi {
 	configureDataGeneration()
