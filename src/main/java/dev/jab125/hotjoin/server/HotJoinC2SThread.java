@@ -1,5 +1,6 @@
 package dev.jab125.hotjoin.server;
 
+import dev.jab125.hotjoin.HotJoin;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
@@ -34,8 +35,14 @@ public class HotJoinC2SThread extends Thread {
 		new Thread(() -> {
 			while (true) {
 				for (Consumer<HotJoinC2SThread> runnable : runnables) {
-					runnable.accept(this);
-					runnables.remove(runnable);
+					boolean success = false;
+					try {
+						runnable.accept(this);
+						success = true;
+					} catch (Throwable t) {
+						HotJoin.LOGGER.error("Failed to run action!", t);
+					}
+					if (success) runnables.remove(runnable);
 				}
 			}
 		}).start();
